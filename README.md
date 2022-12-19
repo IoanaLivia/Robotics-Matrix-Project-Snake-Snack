@@ -1,3 +1,2 @@
-# Robotics-Matrix-Project-Snake-Snack
-
-## Testing 
+# IntroductionToRobotics: Matrix Project
+## Snake : Snacks & Blocks
