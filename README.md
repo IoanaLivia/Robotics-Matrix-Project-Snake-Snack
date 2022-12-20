@@ -1,14 +1,14 @@
 # _IntroductionToRobotics Matrix Project_
-# Snake : Snacks & Blocks
+# Snake : Snacks & Blocks  :snake: :            :apple: &  :bomb: 
 
 <details>
   <summary> 
-     <h2>Task Requirements</h2>
+     <h2> Task Requirements :page_with_curl:  </h2>
   </summary>
   
   <details>
     <summary> 
-     <h3>Menu Requirements</h3>
+     <h3>Menu Requirements :bookmark_tabs:</h3>
   </summary>
   
    Create a menu for your game, emphasis on the game. The player
@@ -79,7 +79,7 @@
 
   <details>
     <summary> 
-     <h3>Game Requirements</h3>
+     <h3>Game Requirements :bookmark_tabs:</h3>
   </summary>
   
   * Minimal components: an LCD, a joystick, a buzzer and the led matrix.
@@ -100,7 +100,7 @@
 
 <details>
   <summary> 
-    <h2>Components</h2>
+    <h2>Components :electric_plug:</h2>
   </summary>
   
   * LED Matrix (8x8)
@@ -118,12 +118,12 @@
 
 <details open>
   <summary> 
-     <h2>Description</h2>
+     <h2>Description :video_game:</h2>
   </summary>
 
-Snake : Snacks & Bombs is a variation of the classic snake game. The main goal is to score as much as possible by collecting food, avoiding bombs, walls and the snake hitting itself. The game has different levels of difficulty based on current level which imply higher speed or/and bombs. Bombs blink slower than food and they remain on the matrix until the snake touches them. The snake will lose a life each time it touches a bomb as an effect of the explosition. When the snake has no lifes remaining, either by hiting three bombs, a wall or itself, it dies and the current game ends. If the player beats any of the top 5 highscore values he will enter the highscore top.
-
+  _Snake : Snacks & Bombs_ is a variation of the classic snake game with the addition of bombs and various difficulty levels. 
+  
+  * The main goal is to score as much as possible by collecting food, avoiding bombs, walls and the snake hitting itself. :snake: :apple: :bomb: 
+  * The game has different levels of difficulty based on current level which imply higher speed or/and bombs. Bombs blink slower than food and they remain on the matrix until the snake touches them. The snake will lose a life each time it touches a bomb as an effect of the explosition. :bomb: :boom: :broken_heart:
+  * When the snake has no lifes remaining, either by hiting three bombs, a wall or itself, it dies and the current game ends. If the player beats any of the top 5 highscore values he will enter the highscore top. :trophy:
 </details>
-
-
-
