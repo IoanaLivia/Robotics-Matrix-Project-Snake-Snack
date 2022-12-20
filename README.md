@@ -190,4 +190,6 @@ This is the backstory of Snake: Snacks & Bombs! A little reminder of childhood, 
   <summary> 
      <h2>Video</h2>
   </summary>
+  
+  [Final video of Playlist][https://www.youtube.com/watch?v=y3L7GrxTdZA&list=PL_rEB6pysLxKQlW7rjFcfy3EZkgVD1uGH&ab_channel=IoanaLiviaPopescu]
 </details>
