@@ -116,11 +116,14 @@
   * Resistors and wires (per logic)
 </details>
 
-## Description
+<details open>
+  <summary> 
+     <h2>Description</h2>
+  </summary>
 
-Snake : Snacks & Blocks is a variation of the classic snake game. The game has different levels of difficulty 
+Snake : Snacks & Bombs is a variation of the classic snake game. The main goal is to score as much as possible by collecting food, avoiding bombs, walls and the snake hitting itself. The game has different levels of difficulty based on current level which imply higher speed or/and bombs. Bombs blink slower than food and they remain on the matrix until the snake touches them. The snake will lose a life each time it touches a bomb as an effect of the explosition. When the snake has no lifes remaining, either by hiting three bombs, a wall or itself, it dies and the current game ends. If the player beats any of the top 5 highscore values he will enter the highscore top.
 
-## How to play
+</details>
 
 
 
