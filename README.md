@@ -1,6 +1,12 @@
 # _IntroductionToRobotics Matrix Project_
 # Snake : Snacks & Bombs  :snake: :            :apple: &  :bomb: 
 
+<br>
+
+  </br>
+
+![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Opening_Image.png)
+
 <details>
   <summary> 
      <h2> Task Requirements :page_with_curl:  </h2>
@@ -47,7 +53,7 @@
       
       * Sounds on or off. Save it to eeprom.
       
-      * Extra stuff can include items specific to the game mechanics,
+      * Extra stuff can include items specific to the game mechanics,s
       or other settings such as chosen theme song etc. Again, save
       it to eeprom.
       
