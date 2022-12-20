@@ -1,5 +1,5 @@
 # _IntroductionToRobotics Matrix Project_
-# Snake : Snacks & Blocks  :snake: :            :apple: &  :bomb: 
+# Snake : Snacks & Bombs  :snake: :            :apple: &  :bomb: 
 
 <details>
   <summary> 
