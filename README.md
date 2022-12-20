@@ -118,6 +118,18 @@
 
 <details open>
   <summary> 
+     <h2>Backstory :snake:</h2>
+  </summary>
+  
+Snake has probably been the first game I've played. If not the first, the one I first played for quite a long time. 
+When? When I was waiting for the bus, for the school breaks to end, for my parents to finish grocery shopping. Whenever I was bored or in the search for some fun.      All I had at hand was my Nokia phone and... Snake. 
+The game certainly has a place in my heart and I wanted to implement it with a boost: speed and bombs! Reliving my childhood at its finest, simplest moments.
+This is the backstory of Snake: Snacks & Bombs! A little reminder of childhood, when we weren't so stressed and caught up by all the responsibilities we are now       facing.
+  
+</details>
+
+<details open>
+  <summary> 
      <h2>Description :video_game:</h2>
   </summary>
 
@@ -126,6 +138,45 @@
   * The main goal is to score as much as possible by collecting food, avoiding bombs, walls and the snake hitting itself. :snake: :apple: :bomb: 
   * The game has different levels of difficulty based on current level which imply higher speed or/and bombs. Bombs blink slower than food and they remain on the matrix until the snake touches them. The snake will lose a life each time it touches a bomb as an effect of the explosition. :bomb: :boom: :broken_heart:
   * When the snake has no lifes remaining, either by hiting three bombs, a wall or itself, it dies and the current game ends. If the player beats any of the top 5 highscore values he will enter the highscore top. :trophy:
+</details>
+
+<details open>
+  <summary> 
+     <h2>How to play</h2>
+  </summary>
+  
+  Menu
+  
+  * Scroll up and down with the joystick. 
+  
+  * Left movement functions as a "Back" option. 
+  
+  * Press to select an item.
+  
+  * Same for submenus or a corresponding message is shown if the settings are different. (e.g. "Press to save").
+  
+  Game
+  
+  * Move with joystick with WASD.
+  
+  * Collect food. At each difficulty the score value of the food changes.
+  
+  * Avoid walls. Instanly dies if hits one.
+  
+  * Avoid eating yourself. Instantly dies if so.
+  
+  * Avoid bombs. Loses a life if touches one. Has 3 lifes during the game.
+  
+  * There are 4 difficulties. 
+  
+    * EASY: decent speed, no bombs.
+    
+    * MEDIUM: higher speed, no bombs.
+    
+    * HARD: decent speed, bombs.
+    
+    * INSANE: higher speed, bombs.
+  
 </details>
 
 <details open>
