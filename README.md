@@ -124,7 +124,7 @@
 
 <details open>
   <summary> 
-     <h2>Backstory :snake:</h2>
+     <h2>Backstory :woman_technologist:</h2>
   </summary>
   
 Snake has probably been the first game I've played. If not the first, the one I first played for quite a long time. 
@@ -136,7 +136,7 @@ This is the backstory of Snake: Snacks & Bombs! A kind reminder of childhood.
 
 <details open>
   <summary> 
-     <h2>Description :video_game:</h2>
+     <h2>Description :snake:</h2>
   </summary>
 
   _Snake : Snacks & Bombs_ is a variation of the classic snake game with the addition of bombs and various difficulty levels. 
@@ -148,7 +148,7 @@ This is the backstory of Snake: Snacks & Bombs! A kind reminder of childhood.
 
 <details open>
   <summary> 
-     <h2>How to play</h2>
+     <h2>How to play :video_game:</h2>
   </summary>
   
   <h3>Menu</h3>
