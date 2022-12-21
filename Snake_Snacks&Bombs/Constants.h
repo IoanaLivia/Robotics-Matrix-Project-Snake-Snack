@@ -39,7 +39,7 @@
 #define CHAR_CLOCK 3
 #define CHAR_STAR 4
 #define CHAR_HUMAN 5
-#define CHAR_QUESTION 6
+
 
 // joystick movement directions
 #define UP 0
@@ -150,17 +150,6 @@ const byte charHuman[8] = {
   B01010
 };
 
-const byte charQuestion[8] = {
-  B11111,
-  B00001,
-  B00001,
-  B00001,
-  B00010,
-  B00100,
-  B00000,
-  B00100
-};
-
 // custom char array to display digits on the lcd
 const char digits[10] = {'0','1','2','3','4','5','6','7','8','9'};
 
@@ -205,6 +194,8 @@ const int brightnessOptions = 3,
           howToOptions = 8,
           soundOptions = 3,
           menuOptions = 6;
+
+const int welcomeTextSize = 8;
 
 
 #endif
