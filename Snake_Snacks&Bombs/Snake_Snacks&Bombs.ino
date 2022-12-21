@@ -65,9 +65,9 @@ int snakeCol[matrixSize * matrixSize];
 bool changedSize = false;
 
 // time related variables related to the last time the snake moved, food / bomb was generated 
-unsigned long lastMoveTime,
-              generatedFood,
-              generatedBomb;
+unsigned long lastMoveTime = 0,
+              generatedFood = 0,
+              generatedBomb = 0;
 
 // states of switch and buzzer
 byte swState = LOW,
@@ -134,7 +134,7 @@ int placeInHighscoreTop = -1,
 bool inLevel = true;
 
 // initialize with true to reinitialize EEPROM
-bool initEEPROM = false;
+bool initEEPROM = true;
 
 unsigned long moveInterval = 20;
 
@@ -153,14 +153,13 @@ unsigned long calledFirstEndScreen = -1,
               calledEndGame = -1;
 
 // array of levels configuration
-levelConfiguration levelsConfiguration[] = {{3, 700, 0, 1, 10000, 0},
-                                            {15, 350, 0, 5, 10000, 0},
-                                            {45, 550, 10000, 10, 5000, 1},
-                                            {100, 300, 10000, 25, 5000, 1}};
+levelConfiguration levelsConfiguration[] = {{5, 700, 0, 1, 10000, 0},
+                                            {20, 350, 0, 5, 10000, 0},
+                                            {50, 550, 10000, 10, 5000, 1},
+                                            {300, 300, 10000, 25, 5000, 1}};
                                           
 
 void setup() {
-  // switch pin
   pinMode(pinSW, INPUT_PULLUP);
   
   // random seed in order for each game experience to be different
@@ -207,14 +206,17 @@ void initializeEEPROM() {
   resetHighscores();
 
   // difficulty
-  EEPROM.put(currDiffAddress, 0);
+  diffIndex = 0;
+  EEPROM.put(currDiffAddress, diffIndex);
 
   // sound
+  buzzerState = HIGH;
   EEPROM.put(soundAddress, HIGH);
 
   // led brightness
-  EEPROM.put(lcdBrightnessAddress, maxLcdBrightness);
-  analogWrite(lcdBacklightPin, maxLcdBrightness);
+  lcdBrightness = maxLcdBrightness * LCD_BRIGHTNESS_FACTOR;
+  EEPROM.put(lcdBrightnessAddress, lcdBrightness);
+  analogWrite(lcdBacklightPin, lcdBrightness);
 
   // matrix brightness
   matrixBrightness = 2;
@@ -248,7 +250,6 @@ void setHighscoreTopFromEEPROM() {
   }
 
 }
-
 
 void setDifficultyFromEEPROM() {
   EEPROM.get(currDiffAddress, diffIndex);
@@ -301,57 +302,79 @@ void resetName() {
 void parseCurrState() {
   switch (currState) {
     case WELCOME:
+      // display welcome message and correspoding matrix image
       enterWelcome();
       break;
     case MENU:
+      // enters the menu of the game
       enterMenu();
       break;
     case START_GAME:
+      // starts a new game
       enterGame();
       break;
     case SETTINGS:
+      // enters the settings menu
       enterSettings();
       break;
     case ABOUT:
+      // enters the about section
       enterAbout();
       break;
     case HOW_TO:
+      // enters the how to play section
       enterHowTo();
       break;
     case HIGHSCORE:
+      // enters the top highscores section
       enterHighscore();
       break;
     case END_GAME:
+      // the game has ended
       endGame();
       break;
     case SET_SOUND:
+      // the user sets sounds option (ON/OFF) from submenu 
       setSound();
       break;
     case SET_DIFFICULTY:
+      // the user sets difficulty option (EASY/MEDIUM/HARD/INSANE) from submenu 
       setDifficulty();
       break;
     case SET_BRIGHTNESS:
+      // the user sets which component's brightness to modify: matrix / lcd display
       setBrightness();
       break;
     case ENTER_NAME:
+      // the user sets his name from the menu
       enterName();
       break;
     case SET_MATRIX_BRIGHTNESS:
+      // the user sets matrix brightness from submenu option 
       setMatrixBrightness();
       break;
     case SET_LCD_BRIGHTNESS:
+      // the user sets lcd brightness from submenu option
       setLcdBrightness();
       break;
     case RESET_HIGHSCORES:
+      // resets all highscores from top to "??? 0" : unknown name and current score 0
       resetHighscores();
       break;
     case ENTER_NAME_FOR_HIGHSCORE:
+      // the user sets his name because he didn't before starting the game and he reached a highscore
       enterName();
       break;
-    case DISPLAY_HIGHSCORE_MESSAGE:
+    case DISPLAY_FIRST_HIGHSCORE_MESSAGE:
+      // displays first corresponding message after the game ended
       displayFirstEndScreen();
       break;
+    case DISPLAY_SECOND_HIGHSCORE_MESSAGE:
+      // displays second message after the first message displayed after game ended
+      displaySecondEndScreen();
+      break;
     case RESET_NAME:
+      // resets name to "???", equivalent to name not being set
       resetNameSetting();
     default:
       break;
@@ -393,7 +416,7 @@ void enterWelcome() {
 }
 
 /* resets values at corresponding memory addresses for the top highscores with '??? 0' each and updates highscoreNames and highscoreValues arrays that store current top highscores
-'??? 0' corresponds to unknown name and a current score of 0 */
+"??? 0" corresponds to unknown name and a current score of 0 */
 void resetHighscores() {
   address = highscoreStartingAddress;
     
@@ -409,7 +432,7 @@ void resetHighscores() {
     address += sizeof(int);
   }
 
-  // reinitialize highscoreNames and highscoreValues
+  // reinitialize highscoreNames and highscoreValues which contain the top highscores information (names & values)
   address = highscoreStartingAddress;
     
   for (int i = 0; i < highscores; i++) {
@@ -433,6 +456,7 @@ void resetHighscores() {
 
 }
 
+// function that lets the user navigate through the setBrightness submenu and press to select which brightness to change
 void setBrightness() {
   static const char brightnessMatrix[][16] = {
     {'B', 'r', 'i', 'g', 'h', 't', 'n', 'e', 's', 's', ' ', ' ', ' ', ' ', ' '},
@@ -449,22 +473,23 @@ void setBrightness() {
   }
 } 
 
+// parses the user's choice of component regarding brightness change and enters next corresponding state
 void parseBrightnessOption(const int brightnessOptionIndex) {
   lcd.clear();
 
   switch(brightnessOptionIndex) {
-    case 1:
-      currState = SET_MATRIX_BRIGHTNESS;
+    case CHANGE_BRIGHTNESS_MATRIX_OPTION_INDEX:
+      setNextState(SET_MATRIX_BRIGHTNESS);
+      //currState = SET_MATRIX_BRIGHTNESS;
       break;
-    case 2:
-      lcd.setCursor(0,0);
-      currState = SET_LCD_BRIGHTNESS;
+    case CHANGE_BRIGHTNESS_LCD_OPTION_INDEX:
+      setNextState(SET_LCD_BRIGHTNESS);
+      //currState = SET_LCD_BRIGHTNESS;
       break;
     default:
       break;
 
   }
-
 
   // go back to settings
 
@@ -740,33 +765,41 @@ void endGame() {
   if (millis() - calledEndGame > 3000 && calledEndGame != -1) { 
     calledFirstEndScreen == -1;
 
-    displaySecondEndScreen();
-
-    int press = getSwitchPress();
-    if (press != NONE) {
-      lcd.clear();
-      lc.setLed(0, currRow, currCol, 0);
-      lc.setLed(0, foodRow , foodCol, 0);
-      resetGameVariables();
-
-      if (placeInHighscoreTop != -1) {
-        if(currName[0] == '?') {
-          initializeName();
-          lcd.clear();
-          lcd.setCursor(0,0);
-          currState = ENTER_NAME_FOR_HIGHSCORE;
-        }
-        else {
-          currScore = 0;
-          setNextState(HIGHSCORE);
-        }
-      }
-      else
-      {
-        currScore = 0;
-        currState = MENU;
-      }
+    // displaySecondEndScreen();
+    if (placeInHighscoreTop != -1) {
+      beep(800);
     }
+    else
+    {
+      beep(200);
+    }
+    currState =  DISPLAY_SECOND_HIGHSCORE_MESSAGE;
+
+    // int press = getSwitchPress();
+    // if (press != NONE) {
+    //   lcd.clear();
+    //   lc.setLed(0, currRow, currCol, 0);
+    //   lc.setLed(0, foodRow , foodCol, 0);
+    //   resetGameVariables();
+
+    //   if (placeInHighscoreTop != -1) {
+    //     if(currName[0] == '?') {
+    //       initializeName();
+    //       lcd.clear();
+    //       lcd.setCursor(0,0);
+    //       currState = ENTER_NAME_FOR_HIGHSCORE;
+    //     }
+    //     else {
+    //       currScore = 0;
+    //       setNextState(HIGHSCORE);
+    //     }
+    //   }
+    //   else
+    //   {
+    //     currScore = 0;
+    //     currState = MENU;
+    //   }
+    // }
   }
   else
   { 
@@ -870,6 +903,10 @@ void displayFirstEndScreen() {
   lcd.print("Level: ");
   displayNumber(diffIndex, 1, 9);
   lcd.print("!");
+
+  if (placeInHighscoreTop == -1) {
+    updateHighscores();
+  }
 }
 
 void updateHighscores() {
@@ -902,32 +939,58 @@ void displaySecondEndScreen() {
   lcd.print("Your scored:");
   displayNumber(currScore, 0, 13);
 
-  if (placeInHighscoreTop == -1) {
-    updateHighscores();
-  }
-
   if (placeInHighscoreTop != -1) {
     address = currNameStartingAddress;
 
     for (int i = 0 ; i < nameSize; i++) {
         EEPROM.get(address, currName[i]);
-        lcd.print(currName[i]);
+        if (currName[i] == '?') {
+          lcd.print(char(' '));
+        }
+        else
+        {
+          lcd.print(currName[i]);
+        }
         address += sizeof(char);
     }
     
-    beep(800);
     lcd.setCursor(0,1);
     displayImage(highscoreImage);
     lcd.print("is in Top 5 !!!");
   }
   else
   { 
-    beep(200);
     lcd.setCursor(0,1);
     displayImage(sadImage);
     lcd.print("...");
     lcd.setCursor(0,1);
     lcd.print("Not a highscore...");
+  }
+
+  int press = getSwitchPress();
+  if (press != NONE) {
+    lcd.clear();
+    lc.setLed(0, currRow, currCol, 0);
+    lc.setLed(0, foodRow , foodCol, 0);
+    resetGameVariables();
+
+    if (placeInHighscoreTop != -1) {
+      if(currName[0] == '?') {
+        initializeName();
+        lcd.clear();
+        lcd.setCursor(0,0);
+        currState = ENTER_NAME_FOR_HIGHSCORE;
+      }
+      else {
+        currScore = 0;
+        setNextState(HIGHSCORE);
+      }
+    }
+    else
+    {
+      currScore = 0;
+      currState = MENU;
+    }
   }
 }
 
@@ -997,8 +1060,14 @@ void displayScore() {
   if (currScore < 10) {
     lcd.print(digits[currScore]);
   }
-  else {
+  else if(currScore < 100){
     lcd.print(digits[currScore / 10]);
+    lcd.print(digits[currScore % 10]);
+  }
+  else
+  {
+    lcd.print(digits[currScore / 100]);
+    lcd.print(digits[(currScore / 10) % 10]);
     lcd.print(digits[currScore % 10]);
   }
 }
@@ -1372,7 +1441,7 @@ void blinkBombs (const int blinkInterval) {
 }
 
 void setDifficulty() {
-  scrollThrough(difficulty, diffOptions, diffIndex, SETTINGS, 0, diffOptions - 1, 0);
+  scrollThrough(difficulty, diffOptions, diffIndex, SETTINGS, diffIndex, diffOptions - 1, 0);
 
   switchPress = getSwitchPress();
 
@@ -1381,7 +1450,7 @@ void setDifficulty() {
   }
 }
 
-void displayLcdMatrixBrightness() {
+void displayMatrixBrightness() {
   lcd.setCursor(0,0);
   lcd.print("Brightness:");
   lcd.setCursor(0,1);
@@ -1390,7 +1459,7 @@ void displayLcdMatrixBrightness() {
 }
 
 void setMatrixBrightness() {
-  displayLcdMatrixBrightness();
+  displayMatrixBrightness();
 
   joystickMove = getJoystickMove();
 
