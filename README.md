@@ -151,7 +151,16 @@ This is the backstory of Snake: Snacks & Bombs! A little reminder of childhood, 
      <h2>How to play</h2>
   </summary>
   
-  Menu
+  <h3>Menu</h3>
+  <details>
+    <summary>
+      <h5>View Instructions</h5>
+      </summary>
+
+  ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Joystick_Menu.png)
+    
+  </details>
+
   
   * Scroll up and down with the joystick. 
   
@@ -161,13 +170,17 @@ This is the backstory of Snake: Snacks & Bombs! A little reminder of childhood, 
   
   * Same for submenus or a corresponding message is shown if the settings are different. (e.g. "Press to save").
   
-  Game
+  <h3>Game</h3>
   <details>
     <summary>
       <h5>View Instructions</h5>
       </summary>
-    </details>
+
+   ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Joystick_Game.png)
+   ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Obstacles.png)
     
+    </details>
+
   * Move with joystick with WASD.
   
   * Collect food. At each difficulty the score value of the food changes.
