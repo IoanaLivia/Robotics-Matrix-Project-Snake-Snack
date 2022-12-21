@@ -148,7 +148,7 @@ This is the backstory of Snake: Snacks & Bombs! A kind reminder of childhood.
 
 <details open>
   <summary> 
-     <h2>How to play :video_game:</h2>
+     <h2>How to play :video_game: </h2>
   </summary>
 
   [Game Instructions](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Snake_Snacks%26Bombs_%5BInstructions%5D.pdf)
