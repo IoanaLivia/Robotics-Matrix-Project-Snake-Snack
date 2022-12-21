@@ -117,7 +117,7 @@ int highscoreValues[highscores];
 // highscore variables for placement achieved and iteration
 int placeHighscore = -1,
     highscoreIndex = highscores - 1,
-    ledBrightness = 10;
+    lcdBrightness = 10;
 
 // true if the game is in progress
 bool inLevel = true;
@@ -171,7 +171,14 @@ void setup() {
 
   // initializing EEPROM memory
   if (initEEPROM) {
-    // current name
+    initializeEEPROM();
+  }
+  else {
+    setupEEPROM();
+  }
+}
+void initializeEEPROM() {
+  // current name
     resetName();
 
     // highscores
@@ -184,7 +191,7 @@ void setup() {
     EEPROM.put(soundAddress, HIGH);
 
     // led brightness
-    EEPROM.put(ledBrightnessAddress, maxLcdBrightness);
+    EEPROM.put(lcdBrightnessAddress, maxLcdBrightness);
     analogWrite(lcdBacklightPin, maxLcdBrightness);
 
     // matrix brightness
@@ -192,12 +199,7 @@ void setup() {
     EEPROM.put(matrixBrightnessAddress, matrixBrightness);
     lc.setIntensity(0, matrixBrightness);
 
-  }
-  else {
-    setupEEPROM();
-  }
 }
-
 void setupEEPROM() {
   address = currNameStartingAddress;
 
@@ -227,8 +229,8 @@ void setupEEPROM() {
   EEPROM.get(soundAddress, buzzerState);
 
   // led brightness
-  EEPROM.put(ledBrightnessAddress, ledBrightness);
-  analogWrite(lcdBacklightPin, ledBrightness * LCD_BRIGHTNESS_FACTOR);
+  EEPROM.put(lcdBrightnessAddress, lcdBrightness);
+  analogWrite(lcdBacklightPin, lcdBrightness * LCD_BRIGHTNESS_FACTOR);
 
   // matrix brightness
   EEPROM.get(matrixBrightnessAddress, matrixBrightness);
@@ -1397,36 +1399,36 @@ void setMatrixBrightness() {
 }
 
 void setLcdBrightness() {
-  EEPROM.get(ledBrightnessAddress, ledBrightness);
+  EEPROM.get(lcdBrightnessAddress, lcdBrightness);
 
   lcd.setCursor(0,0);
   lcd.print("Brightness:");
   lcd.setCursor(0,1);
-  lcd.print(ledBrightness);
+  lcd.print(lcdBrightness);
   displayArrows();
 
-  analogWrite(lcdBacklightPin, ledBrightness * 20);
+  analogWrite(lcdBacklightPin, lcdBrightness * LCD_BRIGHTNESS_FACTOR);
 
   joystickMove = getJoystickMove();
 
   if (joystickMove == LEFT) {
     lcd.clear();
-    ledBrightness = min(ledBrightness + 1, 10);
-    EEPROM.put(ledBrightnessAddress, ledBrightness);
+    lcdBrightness = min(lcdBrightness + 1, maxLcdBrightness);
+    EEPROM.put(lcdBrightnessAddress, lcdBrightness);
   }  
   else if (joystickMove == RIGHT) {
     lcd.clear();
-    ledBrightness = max(ledBrightness - 1, 0);
-    EEPROM.put(ledBrightnessAddress, ledBrightness);
+    lcdBrightness = max(lcdBrightness - 1, 0);
+    EEPROM.put(lcdBrightnessAddress, lcdBrightness);
   }
   else if (joystickMove == DOWN) {
     lcd.clear();
-    EEPROM.put(ledBrightnessAddress, ledBrightness);
+    EEPROM.put(lcdBrightnessAddress, lcdBrightness);
     currState = SET_BRIGHTNESS;
   }
 
-  canScrollUp = !(ledBrightness == 10);
-  canScrollDown = !(ledBrightness == 0);
+  canScrollUp = !(lcdBrightness == maxLcdBrightness);
+  canScrollDown = !(lcdBrightness == 0);
 }
 
 void enterName() {
@@ -1459,10 +1461,10 @@ void enterName() {
       }
       break;
     case UP:
-      letterPos = max(letterPos + 1, 0);
+      letterPos = min(letterPos + 1, nameSize - 1);
       break;
     case DOWN:
-      letterPos = min(letterPos - 1, nameSize);
+      letterPos = max(letterPos - 1, 0);
       break;
     default:
       break;

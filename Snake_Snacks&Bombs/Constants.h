@@ -81,7 +81,7 @@ const int matrixBrightnessAddress = 0,
           currNameStartingAddress = 20,
           currDiffAddress = 4,
           highscoreStartingAddress = 30,
-          ledBrightnessAddress = 100;
+          lcdBrightnessAddress = 100;
 
 // customized chars
 const byte charDownArrow[8] = {
@@ -166,7 +166,7 @@ const char digits[10] = {'0','1','2','3','4','5','6','7','8','9'};
 
 const byte matrixSize = 8;
 
-const int maxLcdBrightness = 255;
+const int maxLcdBrightness = 10;
 
 const int blinkInterval = 300,
           debounceDelayLong = 3000,
