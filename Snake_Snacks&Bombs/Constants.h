@@ -24,6 +24,7 @@
 #define RESET_HIGHSCORES 14
 #define ENTER_NAME_FOR_HIGHSCORE 15
 #define DISPLAY_HIGHSCORE_MESSAGE 16
+#define RESET_NAME 17
 
 // difficulties indexes
 #define EASY 0
@@ -200,7 +201,7 @@ const uint64_t endGameImage = 0x007e7e7e7e7e7e00;
 const int brightnessOptions = 3,
           aboutOptions = 6,
           diffOptions = 4,
-          settingsOptions = 6,
+          settingsOptions = 7,
           howToOptions = 8,
           soundOptions = 3,
           menuOptions = 6;

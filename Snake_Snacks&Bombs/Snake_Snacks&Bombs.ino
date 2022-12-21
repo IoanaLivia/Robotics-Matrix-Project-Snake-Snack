@@ -110,7 +110,6 @@ int currRow = 0,
 int matrixBrightness = 2;
 
 char currName[nameSize],
-     nameDisplay[nameSize],
      highscoreNames[highscores][nameSize];
 
 int highscoreValues[highscores];
@@ -124,7 +123,7 @@ int placeHighscore = -1,
 bool inLevel = true;
 
 // initialize with true to reinitialize EEPROM
-bool initEEPROM = true;
+bool initEEPROM = false;
 
 unsigned long moveInterval = 20;
 
@@ -141,13 +140,14 @@ struct levelConfiguration {
 unsigned long calledFirstEndScreen = -1,
               calledEndGame = -1;
 
-levelConfiguration levelsConfiguration[] = {{5, 700, 0, 1, 10000, 0},
+levelConfiguration levelsConfiguration[] = {{3, 700, 0, 1, 10000, 0},
                                             {15, 350, 0, 5, 10000, 0},
-                                            {30, 550, 10000, 10, 5000, 1},
+                                            {45, 550, 10000, 10, 5000, 1},
                                             {100, 300, 10000, 25, 5000, 1}};
 
 void setup() {
   pinMode(pinSW, INPUT_PULLUP);
+  Serial.begin(9600);
   
   // random seed in order for each game experience to be different
   randomSeed(analogRead(0));
@@ -167,37 +167,15 @@ void setup() {
   lcd.createChar(CHAR_HUMAN, charHuman);
   //lcd.createChar(CHAR_QUESTION, charQuestion);
 
-  currState = WELCOME;
+  currState = MENU;
 
   // initializing EEPROM memory
   if (initEEPROM) {
     // current name
-    address = currNameStartingAddress;
-
-    for (int i = 0 ; i < nameSize; i++) {
-      EEPROM.put(address, char('?'));
-      address += sizeof(char);
-    }
-
-    for (int i = 0 ; i < nameSize; i++) {
-      nameDisplay[i] = '?';
-      //currName[i] = '?';
-    }
+    resetName();
 
     // highscores
-    address = highscoreStartingAddress;
-    
-    for (int i = 0; i < highscores; i++) {
-      for (int j = 0; j < nameSize; j++) {
-        EEPROM.put(address, char('?')); //char('?')
-        address += sizeof(char);
-      }
-    }
-    
-    for (int i = 0; i < highscores; i++) {
-      EEPROM.put(address, 0);
-      address += sizeof(int);
-    }
+    resetHighscores();
 
     // difficulty
     EEPROM.put(currDiffAddress, 0);
@@ -261,6 +239,22 @@ void loop() {
  parseCurrState();
 }
 
+void resetName() {
+  address = currNameStartingAddress;
+
+  for (int i = 0 ; i < nameSize; i++) {
+    EEPROM.put(address, char('?'));
+    address += sizeof(char);
+  }
+
+  address = currNameStartingAddress;
+
+  for (int i = 0 ; i < nameSize; i++) {
+    EEPROM.get(address, currName[i]);
+    address += sizeof(char);
+  }
+}
+
 void parseCurrState() {
   switch (currState) {
     case WELCOME:
@@ -314,8 +308,25 @@ void parseCurrState() {
     case DISPLAY_HIGHSCORE_MESSAGE:
       displayFirstEndScreen();
       break;
+    case RESET_NAME:
+      resetNameSetting();
     default:
       break;
+  }
+}
+void resetNameSetting() {
+  lcd.setCursor(0,0);
+  lcd.print("New name: ???");
+  lcd.setCursor(0,1);
+  lcd.print("Press to save.");
+
+  if(getSwitchPress() != NONE) {
+    resetName();
+    currState = SETTINGS;
+  }
+
+  if (getJoystickMove() == DOWN) {
+    currState = SETTINGS;
   }
 }
 
@@ -461,7 +472,7 @@ void enterGame() {
     currState = END_GAME;
   }
 
-  if (currScore == levelsConfiguration[diffIndex].scoreThreshold) {
+  if (currScore >= levelsConfiguration[diffIndex].scoreThreshold) {
     if (diffIndex == diffOptions - 1) {
       lcd.clear();
       lcd.print(diffIndex);
@@ -478,6 +489,7 @@ void enterSettings() {
   static const char settingsMatrix[][16] = {
     {' ', ' ', ' ', 'S', 'e', 't', 't', 'i', 'n', 'g', 's', ' ', ' ', ' ', ' '},
     {'E', 'n', 't', 'e', 'r', ' ', 'N', 'a', 'm', 'e', ' ', ' ', ' ', ' ', ' '},
+    {'R', 'e', 's', 'e', 't', ' ', 'N', 'a', 'm', 'e', ' ', ' ', ' ', ' ', ' '},
     {'B', 'r', 'i', 'g', 'h', 't', 'n', 'e', 's', 's', ' ', ' ', ' ', ' ', ' '},
     {'S', 'o', 'u', 'n', 'd', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
     {'D', 'i', 'f', 'f', 'i', 'c', 'u', 'l', 't', 'y', ' ', ' ', ' ', ' ', ' '},
@@ -525,22 +537,32 @@ void parseSettingsOption(const int settingsIndex) {
   lcd.clear();
 
   if (settingsIndex == 1) {
-    for (int i = 0 ; i < nameSize; i++) {
-        nameDisplay[i] = '?';
+    if (currName[0] == '?')
+    {
+      initializeName();
     }
+
+    // lcd.clear();
+    // lcd.setCursor(0,0);
+    // letterPos = 0;
     currState = ENTER_NAME;
   }
   else if (settingsIndex == 2) {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    currState = RESET_NAME;
+  }
+  else if (settingsIndex == 3) {
     lcd.setCursor(0,0);
     currState = SET_BRIGHTNESS;
   }
-  else if (settingsIndex == 3) {
+  else if (settingsIndex == 4) {
     currState = SET_SOUND;
   }
-  else if (settingsIndex == 4) {
+  else if (settingsIndex == 5) {
     currState = SET_DIFFICULTY;
   }
-  else if (settingsIndex == 5) {
+  else if (settingsIndex == 6) {
     lcd.setCursor(0,0);
     lcd.print("Top 5 highscores");
     lcd.setCursor(0,1);
@@ -548,6 +570,18 @@ void parseSettingsOption(const int settingsIndex) {
 
     currState = RESET_HIGHSCORES;
   }
+}
+
+void initializeName() {
+  for(int i = 0; i < nameSize; ++i) {
+        currName[i] = 'a';
+  }
+
+  saveName();
+
+  lcd.clear();
+  lcd.setCursor(0,0);
+  letterPos = 0;
 }
 
 void enterAbout() {
@@ -636,7 +670,8 @@ void enterHighscore() {
   }
 
   lcd.print(" ");
-  lcd.print(highscoreValues[highscoreIndex]);
+  //lcd.print(highscoreValues[highscoreIndex]);
+  displayNumber(highscoreValues[highscoreIndex], 1, 5);
   displayArrows();
 
   joystickMove = getJoystickMove();
@@ -682,15 +717,31 @@ void endGame() {
       lc.setLed(0, foodRow , foodCol, 0);
       currCol = 0;
       currRow = 0;
-      currState = MENU;
       calledFirstEndScreen == -1;
-      currScore = 0;
       gameStartTime = 0;
       lifes = 3;
       noOfMinutes = 0;
       noOfSeconds = 0;
       foodCol = 0;
       foodRow = 0;
+
+      if (placeHighscore != -1) {
+        if(currName[0] == '?') {
+          initializeName();
+          currState = ENTER_NAME_FOR_HIGHSCORE;
+        }
+        else {
+          currScore = 0;
+          lcd.clear();
+          lcd.setCursor(0,0);
+          currState = HIGHSCORE;
+        }
+      }
+      else
+      {
+        currScore = 0;
+        currState = MENU;
+      }
     }
   }
   else
@@ -780,7 +831,8 @@ void displayFirstEndScreen() {
   address = currNameStartingAddress;
 
   lcd.setCursor(0,0);
-  lcd.print("Congrats!   ");
+  lcd.print("Congrats!");
+  lcd.setCursor(13,0);
 
   for (int i = 0 ; i < nameSize; i++) {
     EEPROM.get(address, currName[i]);
@@ -794,12 +846,7 @@ void displayFirstEndScreen() {
   lcd.print("!");
 }
 
-void displaySecondEndScreen() {
-  lcd.setCursor(0,0);
-  lcd.print("Your score      ");
-  displayNumber(currScore, 0, 12);
-
-  if (placeHighscore == -1) {
+void updateHighscores() {
     for (int i = highscores - 1; i >= 0; i--) {
       if (currScore > highscoreValues[i] && currScore != 0) {
         placeHighscore = i;
@@ -807,31 +854,41 @@ void displaySecondEndScreen() {
       }
     }
 
-      if (placeHighscore != -1) {
-        for (int i = 0; i < placeHighscore; ++i) {
-          for (int j = 0; j < nameSize; j++) {
-            highscoreNames[i][j] = highscoreNames[i + 1][j];
-          }
-          highscoreValues[i] =  highscoreValues[i + 1];
-        }
-
-        highscoreValues[placeHighscore] = currScore;
+    if (placeHighscore != -1 && currName[0] != '?') {
+      for (int i = 0; i < placeHighscore; ++i) {
         for (int j = 0; j < nameSize; j++) {
-          highscoreNames[placeHighscore][j] = currName[j];
+          highscoreNames[i][j] = highscoreNames[i + 1][j];
         }
+        highscoreValues[i] =  highscoreValues[i + 1];
+      }
 
-        saveHighscores();
+      highscoreValues[placeHighscore] = currScore;
+
+      for (int j = 0; j < nameSize; j++) {
+        highscoreNames[placeHighscore][j] = currName[j];
+      }
+
+      saveHighscores();
     }
+}
+void displaySecondEndScreen() {
+  lcd.setCursor(0,0);
+  lcd.print("Your score      ");
+  displayNumber(currScore, 0, 13);
+
+  if (placeHighscore == -1) {
+    updateHighscores();
   }
 
   if (placeHighscore != -1) {
     address = currNameStartingAddress;
+
     for (int i = 0 ; i < nameSize; i++) {
         EEPROM.get(address, currName[i]);
         lcd.print(currName[i]);
         address += sizeof(char);
-      }
-    //}
+    }
+    
     beep(800);
     lcd.setCursor(0,1);
     displayImage(highscoreImage);
@@ -846,19 +903,6 @@ void displaySecondEndScreen() {
     lcd.setCursor(0,1);
     lcd.print("Not a highscore...");
   }
-
-  // if (currState != ENTER_NAME_FOR_HIGHSCORE)
-  // {
-  //   int press = getSwitchPress();
-  //   if (press != NONE) {
-  //     lcd.clear();
-
-  //     currState = MENU;
-      
-  //     calledEndGame = -1;
-  //     gameStartTime = 0;
-  //   }
-  // }
 }
 
 void displayNumber(const int number, const int cursorRow, int cursorColumn) {
@@ -1220,6 +1264,8 @@ void parseMenuOption(const int menuIndex) {
         }
         currRow = snakeRow[0];
         currCol = snakeCol[0];
+        
+        EEPROM.get(currDiffAddress, diffIndex);
 
         if(diffIndex == 0) {
           currScore = 0;
@@ -1243,12 +1289,12 @@ void parseMenuOption(const int menuIndex) {
           }
         }
 
-        EEPROM.get(currDiffAddress, diffIndex);
-
         break;
       case 2:
         readHighscores();
         address = highscoreStartingAddress;
+        lcd.clear();
+        lcd.setCursor(0,0);
         currState = HIGHSCORE;
         enterHighscore();
         break;
@@ -1384,68 +1430,70 @@ void setLcdBrightness() {
 }
 
 void enterName() {
-  static char letters[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' '};
-
-  joystickMove = getJoystickMove();
+  Serial.println(currName);
 
   lcd.setCursor(0, 1);
   lcd.print("Press to save.");
-  lcd.setCursor(letterPos, 0);
-  lcd.print(letters[letterIndex]);
-  lcd.setCursor(9,0);
+  lcd.setCursor(0, 0);
+
+  for (int i = 0; i < nameSize; ++i) {
+    lcd.print(currName[i]);
+    Serial.println(currName[i]);
+  }
+
+  lcd.setCursor(9,0); 
   lcd.print("Max:3");
   displayArrows();
 
-  if (joystickMove == LEFT) {
-    letterIndex = max(letterIndex - 1, 0);
-    nameDisplay[letterPos] = letters[letterIndex];
-  }  
-  else if (joystickMove == RIGHT) {
-    letterIndex = min(letterIndex + 1, 26);
-    nameDisplay[letterPos] = letters[letterIndex];
-  }
-  else if (joystickMove == UP) {
-    nameDisplay[letterPos] = letters[letterIndex];
+  joystickMove = getJoystickMove();
 
-    letterPos += 1;
-    letterIndex = 0;
-    if (letterPos > nameSize - 1) {
-      letterPos = nameSize - 1;
-    }
-  }
-  else if (joystickMove == DOWN) {
-    nameDisplay[letterPos] = letters[letterIndex];
-    letterPos -= 1;
-    letterIndex = 0;
-
-    if (letterPos < 0) {
-      letterPos = 0;
-    }
+  switch (joystickMove) {
+    case LEFT:
+      if(currName[letterPos] != 'a') {
+        currName[letterPos]--;
+      }
+      break;
+    case RIGHT:
+      if(currName[letterPos] != 'z') {
+        currName[letterPos]++;
+      }
+      break;
+    case UP:
+      letterPos = max(letterPos + 1, 0);
+      break;
+    case DOWN:
+      letterPos = min(letterPos - 1, nameSize);
+      break;
+    default:
+      break;
   }
 
-  canScrollUp = !(letterIndex == 0);
-  canScrollDown = !(letterIndex == 26);
+  canScrollUp = !(currName[letterPos] == 'a');
+  canScrollDown = !(currName[letterPos] == 'z');
 
   switchPress = getSwitchPress();
 
   if (switchPress != NONE) {
     saveName();
-
-    lcd.clear();
-    lcd.setCursor(0,0);
-    letterPos = 0;
-    letterIndex = 0;
-    currState = SETTINGS;
+    if (currState == ENTER_NAME_FOR_HIGHSCORE) {
+      lcd.clear();
+      lcd.setCursor(0,0);
+      updateHighscores();
+      currScore = 0;
+      currState = HIGHSCORE;
+    }
+    else
+    {
+      currState = SETTINGS;
+    }
   }
-
 }
 
 void saveName() {
   address = currNameStartingAddress;
 
   for (int i = 0 ; i < nameSize; i++) {
-    EEPROM.put(address, nameDisplay[i]);
-    EEPROM.get(address, currName[i]);
+    EEPROM.put(address, currName[i]);
     address += sizeof(char);
   }
 
