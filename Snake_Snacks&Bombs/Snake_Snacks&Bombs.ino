@@ -12,7 +12,7 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 // universal variable used to temporarly store different addresses
 int address;
 
-// when the current game starts
+// time of when the current game starts
 unsigned long gameStartTime = 0;
 
 // in-game variables
@@ -21,17 +21,17 @@ int lifes = 3,
     noOfMinutes = 0,
     noOfSeconds = 0;
 
-// index of the current option for and total number of options for menus and submenus or game settings (difficulty, brightness, etc)
+// index of the current option for and total number of options for menus and submenus or game settings (difficulty, brightness, letter position when setting the name etc)
 int diffIndex = 0, 
     aboutIndex = 1,
     settingsIndex = 1,
     howToIndex = 1,
     soundIndex = 1,
     menuIndex = 1,
-    letterIndex = 0,
     letterPos = 0,
     brightnessOptionIndex = 1;
 
+// the current state we are in regarding functionality options
 int currState = WELCOME;
 
 // bitmap used to store location of bombs
@@ -71,6 +71,7 @@ int switchPress = NONE,
     joystickMove = NONE,
     lastJoystickMove = NONE;
 
+// passed short delay is used to detect a short press of the button
 bool passedShortDelay = false,
      canScrollDown = true, 
      canScrollUp = false,
@@ -88,6 +89,7 @@ int foodCol = 0,
     bombCol = 0,
     bombRow = 0;
 
+// true if the snake touches a food / bomb object (matrix led)
 bool collectedFood = false,
      explodedBomb = false;
 
@@ -109,13 +111,15 @@ int currRow = 0,
 
 int matrixBrightness = 2;
 
+// arrays of current name of the player and current names in Top 5
 char currName[nameSize],
      highscoreNames[highscores][nameSize];
 
+// array of current score values in Top 5
 int highscoreValues[highscores];
 
 // highscore variables for placement achieved and iteration
-int placeHighscore = -1,
+int placeInHighscoreTop = -1,
     highscoreIndex = highscores - 1,
     lcdBrightness = 10;
 
@@ -568,7 +572,7 @@ void parseSettingsOption(const int settingsIndex) {
     lcd.setCursor(0,0);
     lcd.print("Top 5 highscores");
     lcd.setCursor(0,1);
-    lcd.print("are now reseted!");
+    lcd.print("have been reset!");
 
     currState = RESET_HIGHSCORES;
   }
@@ -695,21 +699,14 @@ void enterHighscore() {
 }
 
 void endGame() {
-  //static long called = -1;
-
-  if (calledEndGame == -1) { //called
+  if (calledEndGame == -1) { 
     displayImage(endGameImage);
-    //called = millis();
     calledEndGame = millis();
   }
 
-  if (millis() - calledEndGame > 3000 && calledEndGame != -1) { //if (millis() - called > 3000 && called != -1) {
-    // if (calledFirstEndScreen != -1) {
-    //   lcd.clear();
-    //   lcd.setCursor(0,0);
+  if (millis() - calledEndGame > 3000 && calledEndGame != -1) { 
     calledFirstEndScreen == -1;
-    //}
-    
+
     displaySecondEndScreen();
 
     int press = getSwitchPress();
@@ -717,26 +714,18 @@ void endGame() {
       lcd.clear();
       lc.setLed(0, currRow, currCol, 0);
       lc.setLed(0, foodRow , foodCol, 0);
-      currCol = 0;
-      currRow = 0;
-      calledFirstEndScreen == -1;
-      gameStartTime = 0;
-      lifes = 3;
-      noOfMinutes = 0;
-      noOfSeconds = 0;
-      foodCol = 0;
-      foodRow = 0;
+      resetGameVariables();
 
-      if (placeHighscore != -1) {
+      if (placeInHighscoreTop != -1) {
         if(currName[0] == '?') {
           initializeName();
+          lcd.clear();
+          lcd.setCursor(0,0);
           currState = ENTER_NAME_FOR_HIGHSCORE;
         }
         else {
           currScore = 0;
-          lcd.clear();
-          lcd.setCursor(0,0);
-          currState = HIGHSCORE;
+          setNextState(HIGHSCORE);
         }
       }
       else
@@ -851,23 +840,23 @@ void displayFirstEndScreen() {
 void updateHighscores() {
     for (int i = highscores - 1; i >= 0; i--) {
       if (currScore > highscoreValues[i] && currScore != 0) {
-        placeHighscore = i;
+        placeInHighscoreTop = i;
         break;
       }
     }
 
-    if (placeHighscore != -1 && currName[0] != '?') {
-      for (int i = 0; i < placeHighscore; ++i) {
+    if (placeInHighscoreTop != -1 && currName[0] != '?') {
+      for (int i = 0; i < placeInHighscoreTop; ++i) {
         for (int j = 0; j < nameSize; j++) {
           highscoreNames[i][j] = highscoreNames[i + 1][j];
         }
         highscoreValues[i] =  highscoreValues[i + 1];
       }
 
-      highscoreValues[placeHighscore] = currScore;
+      highscoreValues[placeInHighscoreTop] = currScore;
 
       for (int j = 0; j < nameSize; j++) {
-        highscoreNames[placeHighscore][j] = currName[j];
+        highscoreNames[placeInHighscoreTop][j] = currName[j];
       }
 
       saveHighscores();
@@ -878,11 +867,11 @@ void displaySecondEndScreen() {
   lcd.print("Your score      ");
   displayNumber(currScore, 0, 13);
 
-  if (placeHighscore == -1) {
+  if (placeInHighscoreTop == -1) {
     updateHighscores();
   }
 
-  if (placeHighscore != -1) {
+  if (placeInHighscoreTop != -1) {
     address = currNameStartingAddress;
 
     for (int i = 0 ; i < nameSize; i++) {
@@ -1255,7 +1244,7 @@ void parseMenuOption(const int menuIndex) {
         currState = START_GAME;
         gameStartTime = millis();
         lastJoystickMove = NONE;
-        placeHighscore = -1;
+        placeInHighscoreTop = -1;
         calledEndGame = -1;
         inLevel = true;
         snakeSize = 3;
@@ -1541,4 +1530,22 @@ void displayImage(uint64_t image) {
       lc.setLed(0, i, j, bitRead(row, j));
     }
   }
+}
+
+void resetGameVariables() {
+  currCol = 0;
+  currRow = 0;
+  calledFirstEndScreen == -1;
+  gameStartTime = 0;
+  lifes = 3;
+  noOfMinutes = 0;
+  noOfSeconds = 0;
+  foodCol = 0;
+  foodRow = 0;
+}
+
+void setNextState(const int nextState) {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  currState = nextState;
 }
