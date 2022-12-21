@@ -944,13 +944,7 @@ void displaySecondEndScreen() {
 
     for (int i = 0 ; i < nameSize; i++) {
         EEPROM.get(address, currName[i]);
-        if (currName[i] == '?') {
-          lcd.print(char(' '));
-        }
-        else
-        {
-          lcd.print(currName[i]);
-        }
+        lcd.print(currName[i]);
         address += sizeof(char);
     }
     
