@@ -162,7 +162,12 @@ This is the backstory of Snake: Snacks & Bombs! A little reminder of childhood, 
   * Same for submenus or a corresponding message is shown if the settings are different. (e.g. "Press to save").
   
   Game
-  
+  <details>
+    <summary>
+      <h5>View Instructions</h5>
+      </summary>
+    </details>
+    
   * Move with joystick with WASD.
   
   * Collect food. At each difficulty the score value of the food changes.
