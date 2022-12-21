@@ -178,8 +178,10 @@ This is the backstory of Snake: Snacks & Bombs! A little reminder of childhood, 
 
    ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Joystick_Game.png)
    ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Obstacles.png)
+   ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Difficulties_First.png)
+   ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Difficulties_Second.png)
     
-    </details>
+  </details>
 
   * Move with joystick with WASD.
   
