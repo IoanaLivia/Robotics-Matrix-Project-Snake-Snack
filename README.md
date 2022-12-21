@@ -130,7 +130,7 @@
 Snake has probably been the first game I've played. If not the first, the one I first played for quite a long time. 
 When? When I was waiting for the bus, for the school breaks to end, for my parents to finish grocery shopping. Whenever I was bored or in the search for some fun.      All I had at hand was my Nokia phone and... Snake. 
 The game certainly has a place in my heart and I wanted to implement it with a boost: speed and bombs! Reliving my childhood at its finest, simplest moments.
-This is the backstory of Snake: Snacks & Bombs! A little reminder of childhood, when we weren't so stressed and caught up by all the responsibilities we are now       facing.
+This is the backstory of Snake: Snacks & Bombs! A kind reminder of childhood.
   
 </details>
 
