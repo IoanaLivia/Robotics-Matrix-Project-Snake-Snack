@@ -210,6 +210,9 @@ This is the backstory of Snake: Snacks & Bombs! A kind reminder of childhood.
 <details open>
   <summary> 
      <h2>Picture of setup</h2>
+     
+  ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/PictureOfSetup.jpg)
+     
   </summary>
 </details>
 

@@ -1,4 +1,4 @@
-// Matrix Menu & Demo for Game
+// Matrix Project: Snake: Snacks & Bombs
 
 /* Master Comment
 
@@ -444,7 +444,7 @@ void displayScore() {
   if (currScore < 10) {
     lcd.print(digits[currScore]);
   }
-  else if(currScore < 100){
+  else if(currScore < 100) {
     lcd.print(digits[currScore / 10]);
     lcd.print(digits[currScore % 10]);
   }
@@ -801,7 +801,7 @@ void displayArrows() {
 }
 
 // [SCROLL] : universal function that scrolls through text options with the possibility of saving a certain setting
-void scrollThrough(const char text[][16], const int options, int &scrollingIndex, const int returnToState, const int lowerBoundIndex, const int upperBoundIndex, const int upperBoundCursorRow, bool automaticSave){
+void scrollThrough(const char text[][16], const int options, int &scrollingIndex, const int returnToState, const int lowerBoundIndex, const int upperBoundIndex, const int upperBoundCursorRow, bool automaticSave) {
   if (!automaticSave) {
     lcd.setCursor(0,0);
     lcd.print(text[scrollingIndex]);
@@ -952,7 +952,7 @@ void generateBombs() {
           }
         }
         // check if the bomb would spawn on the food
-        if(bombCol == foodCol && bombRow == foodRow){
+        if(bombCol == foodCol && bombRow == foodRow) {
           badBomb = true;
         }
         // check if the bomb would spawn on another bomb
@@ -995,7 +995,7 @@ void inGameMovement() {
   if (millis() - lastMoveTime > levelsConfiguration[diffIndex].levelSpeed) { 
     lastMoveTime = millis();
 
-    switch(snakeMove){
+    switch (snakeMove) {
       case LEFT:
         // if it touches a wall the snake instantly dies
         if (currCol == 0) {
@@ -1046,7 +1046,7 @@ void inGameMovement() {
     lc.setLed(0, currCol, currRow, 1);
 
     // if the snake touches itself the game instantly ends (lifes reaches zero) as the snake dies
-    for (int i = 1; i < snakeSize; i++){
+    for (int i = 1; i < snakeSize; i++) {
       if (snakeRow[i] == currRow && snakeCol[i] == currCol) {
         lifes = 0;
       }
