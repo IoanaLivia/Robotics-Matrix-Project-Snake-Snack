@@ -33,7 +33,7 @@ byte swState = LOW,
      buzzerState = HIGH;
 
 // initialize with true to reinitialize EEPROM
-bool initEEPROM = true;
+bool initEEPROM = false;
 
 // universal variable used to temporarly store different addresses
 int address;
