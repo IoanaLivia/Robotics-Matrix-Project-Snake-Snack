@@ -160,6 +160,7 @@ This is the backstory of Snake: Snacks & Bombs! A kind reminder of childhood.
       </summary>
 
   ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Joystick_Menu_Functionality.png)
+  ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Settings.png)
     
   </details>
 
