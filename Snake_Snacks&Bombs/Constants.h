@@ -157,12 +157,10 @@ const byte charHuman[8] = {
   B01010
 };
 
+const byte matrixSize = 8;
+
 // custom char array to display digits on the lcd
 const char digits[10] = {'0','1','2','3','4','5','6','7','8','9'};
-
-const int blinkInterval = 300,
-          debounceDelayLong = 3000,
-          debounceDelay = 100;
 
 const char difficulty[][16] = {
   {'E','A','S','Y',' ',' '},
@@ -171,28 +169,30 @@ const char difficulty[][16] = {
   {'I','N','S','A','N','E'},
 };
 
-const byte matrixSize = 8;
+const int blinkInterval = 300,
+          debounceDelayLong = 3000,
+          debounceDelay = 100;
 
+// number of highscores in the top and size of name 
 const int highscores = 5,
-          nameSize = 3,
-          maxLcdBrightness = 10;
+          nameSize = 3;
 
 const int initialXValue = 510,
           initialYValue = 510;
 
 // initialize snake with corresponding values for size 3
-const int snakeStartRow[] = {2, 1, 0};
-const int snakeStartCol[] = {3, 3, 3};
+const int snakeStartRow[] = {2, 1, 0},
+          snakeStartCol[] = {3, 3, 3};
 
 // matrix images 
-const uint64_t welcomeImage = 0xffbda1bd85ad81ff;
-const uint64_t highscoreImage = 0x7e1818183c7e7e7e;
-const uint64_t startGameImage = 0x00040c1c3c1c0c04;
-const uint64_t settingsImage = 0x3c3c203c3c0c3c3c;
-const uint64_t aboutImage = 0x2424243c24242418;
-const uint64_t howToImage = 0x2424243c3c242424;
-const uint64_t sadImage = 0x0000243c00240000;
-const uint64_t endGameImage = 0x007e7e7e7e7e7e00;
+const uint64_t welcomeImage = 0xffbda1bd85ad81ff,
+               highscoreImage = 0x7e1818183c7e7e7e,
+               startGameImage = 0x00040c1c3c1c0c04,
+               settingsImage = 0x3c3c203c3c0c3c3c,
+               aboutImage = 0x2424243c24242418,
+               howToImage = 0x2424243c3c242424,
+               sadImage = 0x0000243c00240000,
+               endGameImage = 0x007e7e7e7e7e7e00;
 
 // number of possible variations of choice for certain setting
 const int brightnessOptions = 3,
@@ -203,9 +203,10 @@ const int brightnessOptions = 3,
           soundOptions = 2,
           menuOptions = 6;
 
-const int welcomeTextSize = 6;
-
-const int maxColValueLcd = 16;
+// welcome text size , maximum value for column on lcd and maximum value for lcd brightness
+const int welcomeTextSize = 6,
+          maxColValueLcd = 16,
+          maxLcdBrightness = 10;
 
 // struct for level configuration 
 struct levelConfiguration {
