@@ -182,6 +182,7 @@ This is the backstory of Snake: Snacks & Bombs! A kind reminder of childhood.
    ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Obstacles.png)
    ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Difficulties_First.png)
    ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Difficulties_Second.png)
+   ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Endings.png)
     
   </details>
 
