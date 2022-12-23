@@ -3,13 +3,16 @@
 /* Master Comment
 
 # How to navigate through the code based on [CTRL + F]
+  Search by below id to find corresponding function:
 
+  [VARIABLES]
+  [STATE MANAGER]
+  [WELCOME]
 
 # Logic
 
 The game is controlled in the parseCurrState() function which, based on the current state (value of currState varibale) enters a corresponding function that controls the state
 (e.g. for currState == MENU, enterMenu() function is entered and so on...).
-
 
 */
 
@@ -290,7 +293,7 @@ void enterMenu() {
 
   displayImageOnMatrix(welcomeImage);
 
-  scrollThrough(menuText, menuOptions, menuIndex, MENU, 1, menuOptions - 1, 1, 1, true);
+  scrollThrough(menuText, menuOptions, menuIndex, MENU, 1, menuOptions - 1, 1, true);
 
   switchPress = getSwitchPress();
 
@@ -300,56 +303,17 @@ void enterMenu() {
   }
 }
 
-// [MENU OPTION] :TO DO
+// [MENU OPTION] : menu option manager
 void parseMenuOption(const int menuIndex) {
     lcd.clear();
     clearMatrix();
 
     switch(menuIndex) {
       case START_GAME:
-        currState = START_GAME;
-        gameStartTime = millis();
-        lastJoystickMove = NONE;
-        placeInHighscoreTop = -1;
-        calledEndGame = -1;
-        inGame = true;
-        snakeSize = 3;
-        for (int i = 0; i < snakeSize; i++) {
-          snakeRow[i] = snakeStartRow[i];
-          snakeCol[i] = snakeStartCol[i];
-          lc.setLed(0, snakeCol[i], snakeRow[i], 1);
-        }
-
-        currRow = snakeRow[0];
-        currCol = snakeCol[0];
-        
-        EEPROM.get(currDiffAddress, diffIndex);
-
-        if(diffIndex == 0) {
-          currScore = 0;
-        }
-        else {
-          currScore = levelsConfiguration[diffIndex - 1].scoreThreshold;
-        }
-
-        lifes = 3;
-        noOfMinutes = 0;
-        noOfSeconds = 0;
-        snakeMove = UP;
-        changedSize = false;
-        collectedFood = false;
-        lastMoveTime = millis();
-        generatedFood = millis();
-
-        for (int i = 0; i < matrixSize; i++) {
-          for (int j = 0; j < matrixSize; j++) {
-            bombsBitmap[i][j] = 0;
-          }
-        }
+        prepareForNewGame();
+        setNextState(START_GAME);
         break;
       case HIGHSCORE:
-        //readHighscores();
-        //address = highscoreStartingAddress;
         setNextState(HIGHSCORE);
         break;
       case SETTINGS:
@@ -361,12 +325,58 @@ void parseMenuOption(const int menuIndex) {
       case HOW_TO:
         setNextState(HOW_TO);
         break;
-      // case 6:
-      //   currState = RESET_HIGHSCORES;
-      //   break;
+      case 6:
+        setNextState(RESET_HIGHSCORES);
+        break;
       default:
         break;
     }
+}
+
+void prepareForNewGame() {
+  // initialise variables
+  gameStartTime = millis();
+  lastMoveTime = millis();
+  generatedFood = millis();
+  lastJoystickMove = NONE;
+  snakeMove = UP;
+  placeInHighscoreTop = -1;
+  calledEndGame = -1;
+  inGame = true;
+  changedSize = false;
+  collectedFood = false;
+  snakeSize = 3;
+  lifes = 3;
+  noOfMinutes = 0;
+  noOfSeconds = 0;
+
+  // initialise snake
+  for (int i = 0; i < snakeSize; i++) {
+    snakeRow[i] = snakeStartRow[i];
+    snakeCol[i] = snakeStartCol[i];
+    lc.setLed(0, snakeCol[i], snakeRow[i], 1);
+  }
+
+  currRow = snakeRow[0];
+  currCol = snakeCol[0];
+  
+  // get saved setting of difficulty from EEPROM
+  EEPROM.get(currDiffAddress, diffIndex);
+
+  // set starting score based on chosen difficulty
+  if(diffIndex == 0) {
+    currScore = 0;
+  }
+  else {
+    currScore = levelsConfiguration[diffIndex - 1].scoreThreshold;
+  }
+
+  // initialise bombs bitmap ()
+  for (int i = 0; i < matrixSize; i++) {
+    for (int j = 0; j < matrixSize; j++) {
+      bombsBitmap[i][j] = 0;
+    }
+  }
 }
 
 // [GAME] : snake movement, food +/- bombs generation, display of lcd game information and control of reaching next level / game end
@@ -448,13 +458,15 @@ void displayScore() {
 
 // displays the current timer (how much time has passed since game start) and suggestive character resembling a clock 
 void displayTimer() {
-  // TO DO: make noOfSeconds & noOfMinutes static?
+  static const int msInAMinute = 60000,
+                   msInASecond = 1000,
+                   secInAMinute = 60;
 
   lcd.setCursor(10,0);
   lcd.write(CHAR_CLOCK);
   lcd.setCursor(11,0);
 
-  noOfMinutes = (millis() - gameStartTime) / 60000;
+  noOfMinutes = (millis() - gameStartTime) / msInAMinute;
 
   // prints minutes including necessary padding if the number has only one digit
   if (noOfMinutes < 10) {
@@ -467,12 +479,12 @@ void displayTimer() {
   lcd.setCursor(14,0);
 
   // calculates number of seconds that have passed
-  noOfSeconds = (millis() - gameStartTime) / 1000 -  60 * noOfMinutes;
+  noOfSeconds = (millis() - gameStartTime) / msInASecond -  secInAMinute * noOfMinutes;
 
   // when 60 seconds have passed a minute is added
-  if (noOfSeconds >= 60) {
+  if (noOfSeconds >= secInAMinute) {
     noOfMinutes++;
-    noOfSeconds -= 60;
+    noOfSeconds -= secInAMinute;
   }
 
   // prints seconds including necessary padding if the number has only one digit
@@ -788,21 +800,20 @@ void displayArrows() {
   }
 }
 
-// TO DO
 // [SCROLL] : universal function that scrolls through text options with the possibility of saving a certain setting
-void scrollThrough(const char matrix[][16], const int options, int &scrollingIndex, const int returnToState, const int lowerBoundIndex, const int upperBoundIndex, const int upperBoundCursorRow, const int initialScrollingIndex, bool automaticSave){
+void scrollThrough(const char text[][16], const int options, int &scrollingIndex, const int returnToState, const int lowerBoundIndex, const int upperBoundIndex, const int upperBoundCursorRow, bool automaticSave){
   if (!automaticSave) {
     lcd.setCursor(0,0);
-    lcd.print(matrix[scrollingIndex]);
+    lcd.print(text[scrollingIndex]);
     lcd.setCursor(0,1);
     lcd.print("Press to save.");
   }
   else
   {
     lcd.setCursor(0,0);
-    lcd.print(matrix[0]);
+    lcd.print(text[0]);
     lcd.setCursor(0,1);
-    lcd.print(matrix[scrollingIndex]);
+    lcd.print(text[scrollingIndex]);
   }
 
   displayArrows();
@@ -964,7 +975,7 @@ void generateBombs() {
   
 }
 
-// [GAME MOVEMENTS] : controls snake movement during the game TO DO
+// [GAME MOVEMENTS] : controls snake movement during the game 
 void inGameMovement() {
   static const int intervalMultiplier = 200;
 
@@ -1015,7 +1026,7 @@ void inGameMovement() {
         break;
     }
 
-    // if the snake doesn't change size, turn off last led as it is moving forward 
+    // if the snake doesn't change size, turn off last led as it is just moving, not growing
     if (!changedSize) {
       lc.setLed(0, snakeCol[snakeSize-1], snakeRow[snakeSize-1], 0);
     }
@@ -1082,7 +1093,7 @@ void enterAbout() {
   };
 
   displayImageOnMatrix(aboutImage);
-  scrollThrough(aboutText, aboutOptions, aboutIndex, MENU, 1, aboutOptions - 1, 1, 1, true);
+  scrollThrough(aboutText, aboutOptions, aboutIndex, MENU, 1, aboutOptions - 1, 1, true);
 }
 
 // [HOW TO] : displays how to play text and the user can navigate through it
@@ -1099,7 +1110,7 @@ void enterHowTo() {
   };
 
   displayImageOnMatrix(howToImage);
-  scrollThrough(howToMatrix, howToOptions, howToIndex, MENU, 1, howToOptions - 1, 1, 1, true);
+  scrollThrough(howToMatrix, howToOptions, howToIndex, MENU, 1, howToOptions - 1, 1, true);
 }
 
 // [PRINTS CURRENT NAME] : prints current name on lcd from EEPROM
@@ -1193,7 +1204,7 @@ void enterSettings() {
   };
 
   displayImageOnMatrix(settingsImage);
-  scrollThrough(settingsText, settingsOptions, settingsIndex, MENU, 1, settingsOptions - 1, 1, 1, true);
+  scrollThrough(settingsText, settingsOptions, settingsIndex, MENU, 1, settingsOptions - 1, 1, true);
   
   // by pressing the switch the current settings option displayed will be selected
   switchPress = getSwitchPress();
@@ -1531,12 +1542,14 @@ void resetGameVariables() {
   noOfSeconds = 0;
 }
 
-// [ENTER NAME] : manages enter name setting TO DO MORE COMMENTS
+// [ENTER NAME] : manages enter name setting
 void enterName() {
+  // displays corresponding message
   lcd.setCursor(0, 1);
   lcd.print("Press to save.");
   lcd.setCursor(0, 0);
 
+  // displays current name to be saved
   for (int i = 0; i < nameSize; i++) {
     lcd.print(currName[i]);
   }
@@ -1549,19 +1562,23 @@ void enterName() {
 
   switch (joystickMove) {
     case LEFT:
+      // selects the letter before the current one in alphabetical order if it exists
       if(currName[letterPos] != 'a') {
         currName[letterPos]--;
       }
       break;
     case RIGHT:
+      // selects the letter after the current one in alphabetical order if it exists
       if(currName[letterPos] != 'z') {
         currName[letterPos]++;
       }
       break;
     case UP:
+      // selects the next available position of a letter to be changed (for example, from the first position to the second)
       letterPos = min(letterPos + 1, nameSize - 1);
       break;
     case DOWN:
+      // selects the previous available position of a letter to be changed (for example, from the second position to the first)
       letterPos = max(letterPos - 1, 0);
       break;
     default:
@@ -1576,6 +1593,7 @@ void enterName() {
   if (switchPress != NONE) {
     saveName();
 
+    // reinitialize letter position for next name set
     letterPos = 0;
 
     if (currState == ENTER_NAME_FOR_HIGHSCORE) {
@@ -1601,7 +1619,7 @@ void setSound() {
     {'O', 'F', 'F', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}
   };
 
-  scrollThrough(soundText, soundOptions, soundIndex, SETTINGS, 0, soundOptions - 1, 0, 0, false);
+  scrollThrough(soundText, soundOptions, soundIndex, SETTINGS, 0, soundOptions - 1, 0, false);
 
   switchPress = getSwitchPress();
 
@@ -1615,7 +1633,7 @@ void setSound() {
 
 // [DIFFICULTY] : set difficulty settings option manager 
 void setDifficulty() {
-  scrollThrough(difficulty, diffOptions, diffIndex, SETTINGS, 0, diffOptions - 1, 0, 0, false);
+  scrollThrough(difficulty, diffOptions, diffIndex, SETTINGS, 0, diffOptions - 1, 0, false);
 
   switchPress = getSwitchPress();
 
@@ -1633,7 +1651,7 @@ void setBrightness() {
     {'L', 'c', 'd', ' ', 'D', 'i', 's', 'p', 'l', 'a', 'y', ' ', ' ', ' ', ' '},
   };
 
-  scrollThrough(brightnessMatrix, brightnessOptions, brightnessOptionIndex, SETTINGS, 1, brightnessOptions - 1, 1, 1, true);
+  scrollThrough(brightnessMatrix, brightnessOptions, brightnessOptionIndex, SETTINGS, 1, brightnessOptions - 1, 1, true);
 
   switchPress = getSwitchPress();
 
@@ -1666,26 +1684,29 @@ void parseBrightnessOption(const int brightnessOptionIndex) {
   }
 }
 
-// [MATRIX BRIGHTNESS] : TO DO COMM
+// [MATRIX BRIGHTNESS] : manager of set matrix brightness setting
 void setMatrixBrightness() {
-  displayMatrixBrightness();
+  displayBrightness(matrixBrightness);
 
   joystickMove = getJoystickMove();
 
+  // decrease brightness
   if (joystickMove == LEFT) {
     lcd.clear();
     matrixBrightness = max(matrixBrightness - 1, 0);
     EEPROM.put(matrixBrightnessAddress, matrixBrightness);
   }  
+  // increase brightness
   else if (joystickMove == RIGHT) {
     lcd.clear();
     matrixBrightness = min(matrixBrightness + 1, 15);
     EEPROM.put(matrixBrightnessAddress, matrixBrightness);
   }
 
-  EEPROM.get(matrixBrightnessAddress, matrixBrightness);
-  lc.setIntensity(0, matrixBrightness);
-  
+  // set updated value from EEPROM
+  setMatrixBrightnessFromEEPROM();
+
+  // go back to previous state
   if (joystickMove == DOWN) {
     setNextState(SET_BRIGHTNESS);
   }
@@ -1694,47 +1715,46 @@ void setMatrixBrightness() {
   canScrollDown = !(matrixBrightness == 15);
 }
 
-void displayMatrixBrightness() {
+// [DISPLAY BRIGHTNESS] : displays text and value of brightness and arrows
+void displayBrightness(const int brightnessValue) {
   lcd.setCursor(0,0);
   lcd.print("Brightness:");
   lcd.setCursor(0,1);
-  lcd.print(matrixBrightness);
+  lcd.print(brightnessValue);
   displayArrows();
 }
 
-// [LCD BRIGHTNESS] : TO DO COMM
+// [LCD BRIGHTNESS] : parses the user's choice of component regarding brightness change and enters next corresponding state
 void setLcdBrightness() {
-  EEPROM.get(lcdBrightnessAddress, lcdBrightness);
+  //EEPROM.get(lcdBrightnessAddress, lcdBrightness);
+  displayBrightness(lcdBrightness);
 
-  displayLcdBrightness();
-
-  analogWrite(lcdBacklightPin, lcdBrightness * LCD_BRIGHTNESS_FACTOR);
+  //EEPROM.get(lcdBrightnessAddress, lcdBrightness);
+  //analogWrite(lcdBacklightPin, lcdBrightness * LCD_BRIGHTNESS_FACTOR);
 
   joystickMove = getJoystickMove();
 
+  // decrease brightness
   if (joystickMove == LEFT) {
     lcd.clear();
     lcdBrightness = max(lcdBrightness - 1, 0);
     EEPROM.put(lcdBrightnessAddress, lcdBrightness);
   }  
+  // increase brightness
   else if (joystickMove == RIGHT) {
     lcd.clear();
     lcdBrightness = min(lcdBrightness + 1, maxLcdBrightness);
     EEPROM.put(lcdBrightnessAddress, lcdBrightness);
   }
-  else if (joystickMove == DOWN) {
+
+  setLcdBrightnessFromEEPROM();
+
+  // go back to previous setting
+  if (joystickMove == DOWN) {
     EEPROM.put(lcdBrightnessAddress, lcdBrightness);
     setNextState(SET_BRIGHTNESS);
   }
 
   canScrollUp = !(lcdBrightness == maxLcdBrightness);
   canScrollDown = !(lcdBrightness == 0);
-}
-
-void displayLcdBrightness() {
-  lcd.setCursor(0,0);
-  lcd.print("Brightness:");
-  lcd.setCursor(0,1);
-  lcd.print(lcdBrightness);
-  displayArrows();
 }

@@ -14,24 +14,22 @@
 #define SETTINGS 3
 #define ABOUT 4
 #define HOW_TO 5
-#define RESET_HIGHSCORES 13
+#define RESET_HIGHSCORES 6
 #define END_GAME 7
 #define ENTER_NAME 8
 #define RESET_NAME 9
 #define SET_BRIGHTNESS 10
 #define SET_SOUND 11
 #define SET_DIFFICULTY 12
-#define SET_MATRIX_BRIGHTNESS 14
-#define SET_LCD_BRIGHTNESS 15
-#define ENTER_NAME_FOR_HIGHSCORE 16
-#define DISPLAY_FIRST_HIGHSCORE_MESSAGE 17
-#define DISPLAY_SECOND_HIGHSCORE_MESSAGE 18
+#define SET_MATRIX_BRIGHTNESS 13
+#define SET_LCD_BRIGHTNESS 14
+#define ENTER_NAME_FOR_HIGHSCORE 15
+#define DISPLAY_FIRST_HIGHSCORE_MESSAGE 16
+#define DISPLAY_SECOND_HIGHSCORE_MESSAGE 17
 
-
+// brightness submenu option indexes for matrix and lcd
 #define CHANGE_BRIGHTNESS_MATRIX_OPTION_INDEX 1
 #define CHANGE_BRIGHTNESS_LCD_OPTION_INDEX 2
-
-
 
 // difficulties indexes
 #define EASY 0
@@ -47,7 +45,6 @@
 #define CHAR_STAR 4
 #define CHAR_HUMAN 5
 
-
 // joystick movement directions
 #define UP 0
 #define DOWN 1
@@ -60,8 +57,8 @@
 
 // multipling factors to reduce options for brightness
 #define LCD_BRIGHTNESS_FACTOR 20
-// #define MATRIX_BRIGHTNESS_FACTOR 20
 
+// beep tones and duration
 #define BEEP_LOW 200
 #define BEEP_HIGH 600
 #define BEEP_DURATION 300
@@ -84,7 +81,6 @@ const byte rs = 9,
 
 const byte lcdBacklightPin = 6,
            buzzerPin = 3;
-
 
 // memory addresses for EEPROM
 const int matrixBrightnessAddress = 0,
@@ -164,10 +160,6 @@ const byte charHuman[8] = {
 // custom char array to display digits on the lcd
 const char digits[10] = {'0','1','2','3','4','5','6','7','8','9'};
 
-const byte matrixSize = 8;
-
-const int maxLcdBrightness = 10;
-
 const int blinkInterval = 300,
           debounceDelayLong = 3000,
           debounceDelay = 100;
@@ -179,8 +171,11 @@ const char difficulty[][16] = {
   {'I','N','S','A','N','E'},
 };
 
+const byte matrixSize = 8;
+
 const int highscores = 5,
-          nameSize = 3;
+          nameSize = 3,
+          maxLcdBrightness = 10;
 
 const int initialXValue = 510,
           initialYValue = 510;
@@ -188,7 +183,6 @@ const int initialXValue = 510,
 // initialize snake with corresponding values for size 3
 const int snakeStartRow[] = {2, 1, 0};
 const int snakeStartCol[] = {3, 3, 3};
-
 
 // matrix images 
 const uint64_t welcomeImage = 0xffbda1bd85ad81ff;
@@ -206,7 +200,7 @@ const int brightnessOptions = 3,
           diffOptions = 4,
           settingsOptions = 7,
           howToOptions = 8,
-          soundOptions = 2, //3
+          soundOptions = 2,
           menuOptions = 6;
 
 const int welcomeTextSize = 6;
