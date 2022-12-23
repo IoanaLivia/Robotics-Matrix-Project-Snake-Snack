@@ -5,7 +5,7 @@
 
   </br>
 
-![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Opening_Image.png)
+![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/Opening.png)
 
 <details>
   <summary> 
