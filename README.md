@@ -207,20 +207,13 @@ This is the backstory of Snake: Snacks & Bombs! A kind reminder of childhood.
   
 </details>
 
-<details open>
-  <summary> 
-     <h2>Picture of setup</h2>
+
+## Picture of setup
      
-  ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/PictureOfSetup.jpg)
-     
-  </summary>
-</details>
+ ![](https://github.com/IoanaLivia/Robotics-Matrix-Project-Snake-Snack/blob/main/Assets/Documentation/PictureOfSetup.jpg)
 
 
-<details open>
-  <summary> 
-     <h2>Video</h2>
-  </summary>
+## Video
+     
+  [![](https://img.youtube.com/vi/5pgvKoDdCVE/0.jpg)](https://youtu.be/5pgvKoDdCVE)
   
-  [Final video of Playlist](https://www.youtube.com/watch?v=y3L7GrxTdZA&list=PL_rEB6pysLxKQlW7rjFcfy3EZkgVD1uGH&ab_channel=IoanaLiviaPopescu)
-</details>
