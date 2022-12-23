@@ -403,7 +403,7 @@ void prepareForNewGame() {
   EEPROM.get(currDiffAddress, diffIndex);
 
   // set starting score based on chosen difficulty
-  if(diffIndex == 0) {
+  if (diffIndex == 0) {
     currScore = 0;
   }
   else {
@@ -483,7 +483,7 @@ void displayScore() {
   if (currScore < 10) {
     lcd.print(digits[currScore]);
   }
-  else if(currScore < 100) {
+  else if (currScore < 100) {
     lcd.print(digits[currScore / 10]);
     lcd.print(digits[currScore % 10]);
   }
@@ -662,11 +662,11 @@ void generateBombs() {
           }
         }
         // check if the bomb would spawn on the food
-        if(bombCol == foodCol && bombRow == foodRow) {
+        if (bombCol == foodCol && bombRow == foodRow) {
           badBomb = true;
         }
         // check if the bomb would spawn on another bomb
-        if(bombsBitmap[bombRow][bombCol] == 1) {
+        if (bombsBitmap[bombRow][bombCol] == 1) {
           badBomb = true;
         }
       }
@@ -1024,7 +1024,7 @@ void resetNameSetting() {
   displayResetNameMessage();
 
   // press to reset name
-  if(getSwitchPress() != NONE) {
+  if (getSwitchPress() != NONE) {
     resetName();
     setNextState(SETTINGS);
   }
@@ -1240,13 +1240,13 @@ void enterName() {
   switch (joystickMove) {
     case LEFT:
       // selects the letter before the current one in alphabetical order if it exists
-      if(currName[letterPos] != 'a') {
+      if (currName[letterPos] != 'a') {
         currName[letterPos]--;
       }
       break;
     case RIGHT:
       // selects the letter after the current one in alphabetical order if it exists
-      if(currName[letterPos] != 'z') {
+      if (currName[letterPos] != 'z') {
         currName[letterPos]++;
       }
       break;
