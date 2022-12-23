@@ -3,17 +3,55 @@
 /* Master Comment
 
 # How to navigate through the code based on [CTRL + F]
-  Search by below id to find corresponding function:
+  Search by below id to find corresponding section:
 
   [VARIABLES]
   [STATE MANAGER]
   [WELCOME]
-  
+  [MENU]
+  [MENU OPTION]
+  [GAME]
+  [LCD GAME]
+  [BLINK FOOD]
+  [BLINK BOMBS]
+  [GENERATE FOOD]
+  [GENERATE BOMBS] 
+  [SNAKE MOVEMENT] 
+  [ABOUT]
+  [HOW TO]
+  [HIGHSCORE]
+  [DISPLAY TOP HIGHSCORES]
+  [SETTINGS]
+  [SETTINGS OPTION]
+  [INITIALIZE NAME]
+  [SAVE NAME]
+  [HIGHSCORES RESET MESSAGE]
+  [RESET HIGHSCORES]
+  [READ HIGHSCORES]
+  [SAVE HIGHSCORES] 
+  [RESET NAME SETTING]
+  [DISPLAY NAME RESET MESSAGE]
+  [RESET NAME]
+  [END GAME]
+  [FIRST END SCREEN]
+  [UPDATE HIGHSCORE TOP]
+  [SECOND END SCREEN]
+  [NAME UNSET]
+  [RESET GAME VARIABLES]
+  [ENTER NAME]
+  [SOUND]
+  [BRIGHTNESS]
+  [BRIGHTNESS OPTION]
+  [MATRIX BRIGHTNESS]
+  [DISPLAY BRIGHTNESS]
+  [LCD BRIGHTNESS]
+  [UNIVERSAL FUNCTIONS]
+  [EEPROM setup]
 
 # Logic
 
 The game is controlled in the parseCurrState() function which, based on the current state (value of currState varibale) enters a corresponding function that controls the state
-(e.g. for currState == MENU, enterMenu() function is entered and so on...).
+(e.g. for currState == MENU, enterMenu() function is entered and so on...). 
 
 */
 
@@ -513,334 +551,6 @@ void displayDifficulty() {
   lcd.print(difficulty[diffIndex]);
 }
 
-// [UNIVERSAL FUNCTIONS]
-
-void initializeLcdDisplay() {
-  lcd.begin(16, 2);
-  createCustomChars();
-}
-
-void initializeLedMatrix() {
-  lc.shutdown(0, false);
-  lc.clearDisplay(0);
-}
-
-void createCustomChars() {
-  lcd.createChar(CHAR_DOWN_ARROW, charDownArrow);
-  lcd.createChar(CHAR_UP_ARROW, charUpArrow);
-  lcd.createChar(CHAR_HEART, charHeart);
-  lcd.createChar(CHAR_CLOCK, charClock);
-  lcd.createChar(CHAR_STAR, charStar);
-  lcd.createChar(CHAR_HUMAN, charHuman);
-}
-
-// [EEPROM] : initialises the EEPROM by setting default values to the current name, top 5 highscores, difficulty, sound, lcd and matrix brightness
-void initializeEEPROM() {
-  // current name 
-  resetName();
-
-  // highscores
-  resetHighscores();
-
-  // difficulty
-  diffIndex = 0;
-  EEPROM.put(currDiffAddress, diffIndex);
-
-  // sound
-  buzzerState = HIGH;
-  EEPROM.put(soundAddress, HIGH);
-
-  // led brightness
-  EEPROM.put(lcdBrightnessAddress, lcdBrightness);
-  setLcdBrightnessFromEEPROM();
-
-  // matrix brightness
-  EEPROM.put(matrixBrightnessAddress, matrixBrightness);
-  setMatrixBrightnessFromEEPROM();
-}
-
-// [EEPROM setup] : sets up values for current name, top 5 highscores, difficulty, sound, lcd and matrix brightness by accessing the EEPROM addresses where the values are stored at
-void setupFromEEPROM() {
-  setNameFromEEPROM();
-
-  setHighscoreTopFromEEPROM();
-    
-  setDifficultyFromEEPROM();
-  
-  setSoundFromEEPROM();
-
-  setLcdBrightnessFromEEPROM();
-
-  setMatrixBrightnessFromEEPROM();
-}
-
-// sets current name by accessing EEPROM address where value is stored
-void setNameFromEEPROM() {
-  address = currNameStartingAddress;
-
-  for (int i = 0 ; i < nameSize; i++) {
-    EEPROM.get(address, currName[i]);
-    address += sizeof(char);
-  }
-}
-
-// sets current top 5 highscores by accessing EEPROM address where values are stored
-void setHighscoreTopFromEEPROM() {
-  address = highscoreStartingAddress;
-    
-  for (int i = 0; i < highscores; i++) {
-    for (int j = 0; j < nameSize; j++) {
-      EEPROM.get(address, highscoreNames[i][j]);
-      address += sizeof(char);
-    }
-  }
-
-  for (int i=0; i < highscores; i++) {
-    EEPROM.get(address, highscoreValues[i]);
-    address += sizeof(int);
-  }
-}
-
-// sets current difficulty by accessing EEPROM address where value is stored
-void setDifficultyFromEEPROM() {
-  EEPROM.get(currDiffAddress, diffIndex);
-}
-
-// sets current sound option by accessing EEPROM address where value is stored
-void setSoundFromEEPROM() {
-  EEPROM.get(soundAddress, buzzerState);
-}
-
-// sets current lcd brightness by accessing EEPROM address where value is stored
-void setLcdBrightnessFromEEPROM() {
-  EEPROM.get(lcdBrightnessAddress, lcdBrightness);
-  analogWrite(lcdBacklightPin, lcdBrightness * LCD_BRIGHTNESS_FACTOR);
-}
-
-// sets current matrix brightness by accessing EEPROM address where value is stored
-void setMatrixBrightnessFromEEPROM() {
-  EEPROM.get(matrixBrightnessAddress, matrixBrightness);
-  lc.setIntensity(0, matrixBrightness); 
-}
-
-/* [SCROLLING TEXT] : universal function to display scrolling text letter by letter at scrollInterval on two rows (used for welcome text) in the current context it is used only for the welcome message
-   parameters : text (represented by a char matrix), number of lines and the state to transition to after the whole message has been displayed */
-void displayScrollingText(const char text[][16], const int noOfLines, const int nextState) {
-  static int scrollInterval = 175,
-             lineIndex = 0,
-             columnIndex = 0,
-             cursorRow = 0;
-
-  // initialize last message time at first call of the function if unset in order to keep track of scroll interval per row
-  if (lastTextLineMessageTime == -1 && millis() != 0) {
-    lcd.setCursor(0, cursorRow);
-    lastTextLineMessageTime = millis();
-  }
-
-  // if the scrolling interval has been reached another letter is displayed
-  if (millis() - lastTextLineMessageTime >= scrollInterval && columnIndex < 17) {
-    lcd.print(text[lineIndex][columnIndex]);
-    lastTextLineMessageTime = millis();
-    columnIndex += 1;
-  }
-  
-  // maximum column index has been reached surpassed; if the whole message has been displayed, transition to next state, otherwise, transition to the other cursor row 
-  if (columnIndex > maxColValueLcd) { 
-    // reinitialize last message time, column index and line index
-    lastTextLineMessageTime = -1;
-    columnIndex = 0;
-    lineIndex += 1;
-
-    // the whole message has been displayed and the next step is to transition to the next state
-    if (lineIndex == noOfLines) {
-      setNextState(nextState);
-    }
-
-    // reset row to the other cursor row value because the maximum column index has been reached on the current value
-    if (cursorRow == 1) {
-      lcd.clear();
-      cursorRow = 0;
-    }
-    else {
-      cursorRow = 1;
-    }
-  }
-}
-
-// [NEXT STATE] : transitions to the next state but clearing the lcd display plus resetting the cursor to top left position and changing the current state to the next state
-void setNextState(const int nextState) {
-  lcd.clear();
-  lcd.setCursor(0,0);
-  currState = nextState;
-}
-
-// [MATRIX IMAGE] : displays image on led matrix
-void displayImageOnMatrix(uint64_t image) {
-  for (int i = 0; i < matrixSize; i++) {
-    byte row = (image >> i * matrixSize) & 0xFF;
-    for (int j = 0; j < matrixSize; j++) {
-      lc.setLed(0, i, j, bitRead(row, j));
-    }
-  }
-}
-
-// [CLEAR MATRIX] : shuts off all matrix leds clearing the matrix image
-void clearMatrix() {
-  for (int row = 0; row < matrixSize; row++) {
-    for (int col = 0; col < matrixSize; col++) {
-      lc.setLed(0, row, col, 0);
-    }
-  }
-}
-
-// [BEEP] : tones the buzzer for a limited amount of time resembling a "beep" sound
-void beep(const int toneValue, const int timeLength) {
-  if (buzzerState) {
-    tone(buzzerPin, toneValue, timeLength);
-  }
-}
-
-// [JOYSTICK] : returns current joystick move : NONE / UP / DOWN / LEFT
-int getJoystickMove() {
-  static int xValue = 0,
-             yValue = 0,
-             xChange = 0,
-             yChange = 0;
-
-  xValue = analogRead(pinX);
-  yValue = analogRead(pinY);
-
-  xChange = abs(initialXValue - xValue);
-  yChange = abs(initialYValue - yValue);
-
-  if (!joyMoved) {     
-    if (yChange >= xChange) {
-      if (yValue < minThreshold) {
-        joyMoved = true;
-        return UP;
-      }
-      if (yValue > maxThreshold) {
-        joyMoved = true;
-        return DOWN;
-      }
-    } 
-    else {
-      if (xValue < minThreshold) {
-        joyMoved = true;
-        return LEFT;
-      }
-      if (xValue > maxThreshold) {
-        joyMoved = true;
-        return RIGHT;
-      }
-    }
-  }
-
-  if (xValue >= minThreshold && xValue <= maxThreshold && yValue >= minThreshold && yValue <= maxThreshold) {
-    joyMoved = false;
-  }
-
-  return NONE;
-}
-
-// [SWITCH] : based on pressing history, returns corresponding type of press (SHORT / LONG) or NONE if absent
-int getSwitchPress() {
-   int reading = digitalRead(pinSW);
-
-    if (reading != lastSwState) {
-      lastDebounceTime = millis();
-    }
-
-    lastSwState = reading;
-
-    if (millis() - lastDebounceTime >= debounceDelay) {
-      if (reading != swState) {
-        swState = reading;
-
-        if (swState == LOW) {
-          passedShortDelay = true;
-        }
-      }
-
-      if (swState == LOW) {
-        if (millis() - lastDebounceTime >= debounceDelayLong) {
-          return LONG_PRESS;
-        } 
-      } 
-      else {
-        if (passedShortDelay) {
-          passedShortDelay = false;
-          return SHORT_PRESS;
-        }
-      }
-    }
-
-    return NONE;
-}
-
-// [DISPLAY ARROWS] : display arrows based on the current values of canScrollUp and canScrollDown
-void displayArrows() {
-  // up arrow
-  lcd.setCursor(15,0);
-  if (canScrollUp) {
-    lcd.write(CHAR_UP_ARROW);
-  }
-  else
-  {
-    lcd.print(" ");
-  }
-
-  //down arrow
-  lcd.setCursor(15,1);
-  if (canScrollDown) {
-    lcd.write(char(CHAR_DOWN_ARROW));
-  }
-  else
-  {
-    lcd.print(" ");
-  }
-}
-
-// [SCROLL] : universal function that scrolls through text options with the possibility of saving a certain setting
-void scrollThrough(const char text[][16], const int options, int &scrollingIndex, const int returnToState, const int lowerBoundIndex, const int upperBoundIndex, const int upperBoundCursorRow, bool automaticSave) {
-  if (!automaticSave) {
-    lcd.setCursor(0,0);
-    lcd.print(text[scrollingIndex]);
-    lcd.setCursor(0,1);
-    lcd.print("Press to save.");
-  }
-  else
-  {
-    lcd.setCursor(0,0);
-    lcd.print(text[0]);
-    lcd.setCursor(0,1);
-    lcd.print(text[scrollingIndex]);
-  }
-
-  displayArrows();
-
-  joystickMove = getJoystickMove();
-
-  if (joystickMove == LEFT) {
-    lcd.clear();
-    beep(BEEP_HIGH, BEEP_DURATION);
-    scrollingIndex = max(scrollingIndex - 1, lowerBoundIndex);
-  }  
-  else if (joystickMove == RIGHT) {
-    lcd.clear();
-    beep(BEEP_HIGH, BEEP_DURATION);
-    scrollingIndex  = min(scrollingIndex + 1, upperBoundIndex);
-  }
-  else if (joystickMove == DOWN && automaticSave) {
-    scrollingIndex = lowerBoundIndex;
-    beep(BEEP_HIGH, BEEP_DURATION);
-    setNextState(returnToState);
-  }
-
-  canScrollUp = !(scrollingIndex == lowerBoundIndex);
-  canScrollDown = !(scrollingIndex == upperBoundIndex);
-}
-
 // [BLINK FOOD] : blinks the food led by taking its position as parameter and the blinking interval
 void blinkFood (const int col, const int row, const int blinkInterval) {
   static byte blinkState = 1;
@@ -876,11 +586,10 @@ void blinkBombs (const int blinkInterval) {
 // [GENERATE FOOD] : generates food (one fast blinking led on the matrix) on a random available position on the matrix; controls its blinking
 void generateFood() {
   static const int blinkInterval = 100;
-  
-  static bool expiredFoodTime = false;
+  static bool expiredFoodTime = false,
+              badFood = true;
   static int intervalMultiplier = 5000;
   static unsigned long foodOnScreenInterval = 0;
-  static bool badFood = true;
 
   // depending on difficulty, the foodOnScreenInterval is either loger or shorter
   foodOnScreenInterval = levelsConfiguration[diffIndex].foodSpanInterval;
@@ -976,7 +685,7 @@ void generateBombs() {
   
 }
 
-// [GAME MOVEMENTS] : controls snake movement during the game 
+// [SNAKE MOVEMENT] : controls snake movement during the game 
 void inGameMovement() {
   static const int intervalMultiplier = 200;
 
@@ -1114,17 +823,6 @@ void enterHowTo() {
   scrollThrough(howToMatrix, howToOptions, howToIndex, MENU, 1, howToOptions - 1, 1, true);
 }
 
-// [PRINTS CURRENT NAME] : prints current name on lcd from EEPROM
-void printCurrName() {
-  address = currNameStartingAddress;
-  
-  for (int i = 0 ; i < nameSize; i++) {
-    EEPROM.get(address, currName[i]);
-    lcd.print(currName[i]);
-    address += sizeof(char);
-  }
-}
-
 // [HIGHSCORE] : controls the highscores section
 void enterHighscore() {
   displayImageOnMatrix(highscoreImage);
@@ -1140,9 +838,11 @@ void enterHighscore() {
   joystickMove = getJoystickMove();
 
   if (joystickMove == LEFT) {
-     highscoreIndex = min(highscoreIndex + 1, highscores - 1);
+    beep(BEEP_HIGH, BEEP_DURATION);
+    highscoreIndex = min(highscoreIndex + 1, highscores - 1);
   }  
   else if (joystickMove == RIGHT) {
+    beep(BEEP_HIGH, BEEP_DURATION);
     highscoreIndex = max(highscoreIndex - 1, 0);
   }
   else if (joystickMove == DOWN) {
@@ -1157,7 +857,7 @@ void enterHighscore() {
   canScrollDown = !(highscoreIndex == 0);
 }
 
-// displays top highscores : names and values
+// [DISPLAY TOP HIGHSCORES] : displays top highscores : names and values
 void displayTopHighscores() {
   for (int j = 0; j < nameSize; j++) {
     lcd.print(highscoreNames[highscoreIndex][j]);
@@ -1165,31 +865,6 @@ void displayTopHighscores() {
 
   lcd.print(" ");
   displayNumber(highscoreValues[highscoreIndex], 1, 5);
-}
-
-// [DISPLAY NUMBER] : universal display number function
-void displayNumber(const int number, const int cursorRow, int cursorColumn) {
-  lcd.setCursor(cursorColumn, cursorRow);
-
-  if (number >= 100) {
-   lcd.print(digits[(int)number / 100]);
-  }
-  else
-  {
-    lcd.print(" ");
-  }
-	
-  if (number >= 10) {
-    lcd.print(digits[(number / 10) % 10]);
-  }
-  else
-  {
-    lcd.print(" ");
-  }
-	
-  cursorColumn += 2;
-  lcd.print(digits[number % 10]);
-  lcd.setCursor(cursorColumn + 1, cursorRow);
 }
 
 // [SETTINGS] : controls settings section
@@ -1277,7 +952,7 @@ void displayResetHighscoresMessage() {
   lcd.print("have been reset!");
 }
 
-/*[RESET HIGHSCORES]: resets values at corresponding memory addresses for the top highscores with '??? 0' each and updates highscoreNames and highscoreValues arrays that store current top highscores
+/* [RESET HIGHSCORES]: resets values at corresponding memory addresses for the top highscores with '??? 0' each and updates highscoreNames and highscoreValues arrays that store current top highscores
 "??? 0" corresponds to unknown name and a current score of 0 */
 void resetHighscores() {
   displayResetHighscoresMessage();
@@ -1363,6 +1038,7 @@ void resetNameSetting() {
   }
 }
 
+// [DISPLAY NAME RESET MESSAGE]
 void displayResetNameMessage() {
   lcd.setCursor(0,0);
   lcd.print("New name: ???");
@@ -1370,7 +1046,7 @@ void displayResetNameMessage() {
   lcd.print("Press to save.");
 }
 
-// [RESET NAME]:  function that resets name to its before uploading game value which is "???" in both variable currName and EEPROM (unset; after setting a name it will never be able to gack to "???" unless reset from settings)
+// [RESET NAME] :  function that resets name to its before uploading game value which is "???" in both variable currName and EEPROM (unset; after setting a name it will never be able to gack to "???" unless reset from settings)
 void resetName() {
   address = currNameStartingAddress;
 
@@ -1661,7 +1337,7 @@ void setBrightness() {
   }
 } 
 
-// [BRIGHTNESS OPTION]: parses the user's choice of component regarding brightness change and enters next corresponding state
+// [BRIGHTNESS OPTION] : parses the user's choice of component regarding brightness change and enters next corresponding state
 void parseBrightnessOption(const int brightnessOptionIndex) {
   lcd.clear();
 
@@ -1758,4 +1434,368 @@ void setLcdBrightness() {
 
   canScrollUp = !(lcdBrightness == maxLcdBrightness);
   canScrollDown = !(lcdBrightness == 0);
+}
+
+// [UNIVERSAL FUNCTIONS]
+
+void initializeLcdDisplay() {
+  lcd.begin(16, 2);
+  createCustomChars();
+}
+
+void initializeLedMatrix() {
+  lc.shutdown(0, false);
+  lc.clearDisplay(0);
+}
+
+void createCustomChars() {
+  lcd.createChar(CHAR_DOWN_ARROW, charDownArrow);
+  lcd.createChar(CHAR_UP_ARROW, charUpArrow);
+  lcd.createChar(CHAR_HEART, charHeart);
+  lcd.createChar(CHAR_CLOCK, charClock);
+  lcd.createChar(CHAR_STAR, charStar);
+  lcd.createChar(CHAR_HUMAN, charHuman);
+}
+
+/* [SCROLLING TEXT] : universal function to display scrolling text letter by letter at scrollInterval on two rows (used for welcome text) in the current context it is used only for the welcome message
+   parameters : text (represented by a char matrix), number of lines and the state to transition to after the whole message has been displayed */
+void displayScrollingText(const char text[][16], const int noOfLines, const int nextState) {
+  static int scrollInterval = 175,
+             lineIndex = 0,
+             columnIndex = 0,
+             cursorRow = 0;
+
+  // initialize last message time at first call of the function if unset in order to keep track of scroll interval per row
+  if (lastTextLineMessageTime == -1 && millis() != 0) {
+    lcd.setCursor(0, cursorRow);
+    lastTextLineMessageTime = millis();
+  }
+
+  // if the scrolling interval has been reached another letter is displayed
+  if (millis() - lastTextLineMessageTime >= scrollInterval && columnIndex < 17) {
+    lcd.print(text[lineIndex][columnIndex]);
+    lastTextLineMessageTime = millis();
+    columnIndex += 1;
+  }
+  
+  // maximum column index has been reached surpassed; if the whole message has been displayed, transition to next state, otherwise, transition to the other cursor row 
+  if (columnIndex > maxColValueLcd) { 
+    // reinitialize last message time, column index and line index
+    lastTextLineMessageTime = -1;
+    columnIndex = 0;
+    lineIndex += 1;
+
+    // the whole message has been displayed and the next step is to transition to the next state
+    if (lineIndex == noOfLines) {
+      setNextState(nextState);
+    }
+
+    // reset row to the other cursor row value because the maximum column index has been reached on the current value
+    if (cursorRow == 1) {
+      lcd.clear();
+      cursorRow = 0;
+    }
+    else {
+      cursorRow = 1;
+    }
+  }
+}
+
+// [NEXT STATE] : transitions to the next state but clearing the lcd display plus resetting the cursor to top left position and changing the current state to the next state
+void setNextState(const int nextState) {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  currState = nextState;
+}
+
+// [MATRIX IMAGE] : displays image on led matrix
+void displayImageOnMatrix(uint64_t image) {
+  for (int i = 0; i < matrixSize; i++) {
+    byte row = (image >> i * matrixSize) & 0xFF;
+    for (int j = 0; j < matrixSize; j++) {
+      lc.setLed(0, i, j, bitRead(row, j));
+    }
+  }
+}
+
+// [CLEAR MATRIX] : shuts off all matrix leds clearing the matrix image
+void clearMatrix() {
+  for (int row = 0; row < matrixSize; row++) {
+    for (int col = 0; col < matrixSize; col++) {
+      lc.setLed(0, row, col, 0);
+    }
+  }
+}
+
+// [BEEP] : tones the buzzer for a limited amount of time resembling a "beep" sound
+void beep(const int toneValue, const int timeLength) {
+  if (buzzerState) {
+    tone(buzzerPin, toneValue, timeLength);
+  }
+}
+
+// [JOYSTICK] : returns current joystick move : NONE / UP / DOWN / LEFT
+int getJoystickMove() {
+  static int xValue = 0,
+             yValue = 0,
+             xChange = 0,
+             yChange = 0;
+
+  xValue = analogRead(pinX);
+  yValue = analogRead(pinY);
+
+  xChange = abs(initialXValue - xValue);
+  yChange = abs(initialYValue - yValue);
+
+  if (!joyMoved) {     
+    if (yChange >= xChange) {
+      if (yValue < minThreshold) {
+        joyMoved = true;
+        return UP;
+      }
+      if (yValue > maxThreshold) {
+        joyMoved = true;
+        return DOWN;
+      }
+    } 
+    else {
+      if (xValue < minThreshold) {
+        joyMoved = true;
+        return LEFT;
+      }
+      if (xValue > maxThreshold) {
+        joyMoved = true;
+        return RIGHT;
+      }
+    }
+  }
+
+  if (xValue >= minThreshold && xValue <= maxThreshold && yValue >= minThreshold && yValue <= maxThreshold) {
+    joyMoved = false;
+  }
+
+  return NONE;
+}
+
+// [SWITCH] : based on pressing history, returns corresponding type of press (SHORT / LONG) or NONE if absent
+int getSwitchPress() {
+   int reading = digitalRead(pinSW);
+
+    if (reading != lastSwState) {
+      lastDebounceTime = millis();
+    }
+
+    lastSwState = reading;
+
+    if (millis() - lastDebounceTime >= debounceDelay) {
+      if (reading != swState) {
+        swState = reading;
+
+        if (swState == LOW) {
+          passedShortDelay = true;
+        }
+      }
+
+      if (swState == LOW) {
+        if (millis() - lastDebounceTime >= debounceDelayLong) {
+          return LONG_PRESS;
+        } 
+      } 
+      else {
+        if (passedShortDelay) {
+          passedShortDelay = false;
+          return SHORT_PRESS;
+        }
+      }
+    }
+
+    return NONE;
+}
+
+// [DISPLAY ARROWS] : display arrows based on the current values of canScrollUp and canScrollDown
+void displayArrows() {
+  // up arrow
+  lcd.setCursor(15,0);
+  if (canScrollUp) {
+    lcd.write(CHAR_UP_ARROW);
+  }
+  else
+  {
+    lcd.print(" ");
+  }
+
+  //down arrow
+  lcd.setCursor(15,1);
+  if (canScrollDown) {
+    lcd.write(char(CHAR_DOWN_ARROW));
+  }
+  else
+  {
+    lcd.print(" ");
+  }
+}
+
+// [SCROLL] : universal function that scrolls through text options with the possibility of saving a certain setting
+void scrollThrough(const char text[][16], const int options, int &scrollingIndex, const int returnToState, const int lowerBoundIndex, const int upperBoundIndex, const int upperBoundCursorRow, bool automaticSave) {
+  if (!automaticSave) {
+    lcd.setCursor(0,0);
+    lcd.print(text[scrollingIndex]);
+    lcd.setCursor(0,1);
+    lcd.print("Press to save.");
+  }
+  else
+  {
+    lcd.setCursor(0,0);
+    lcd.print(text[0]);
+    lcd.setCursor(0,1);
+    lcd.print(text[scrollingIndex]);
+  }
+
+  displayArrows();
+
+  joystickMove = getJoystickMove();
+
+  if (joystickMove == LEFT) {
+    lcd.clear();
+    beep(BEEP_HIGH, BEEP_DURATION);
+    scrollingIndex = max(scrollingIndex - 1, lowerBoundIndex);
+  }  
+  else if (joystickMove == RIGHT) {
+    lcd.clear();
+    beep(BEEP_HIGH, BEEP_DURATION);
+    scrollingIndex  = min(scrollingIndex + 1, upperBoundIndex);
+  }
+  else if (joystickMove == DOWN && automaticSave) {
+    scrollingIndex = lowerBoundIndex;
+    beep(BEEP_HIGH, BEEP_DURATION);
+    setNextState(returnToState);
+  }
+
+  canScrollUp = !(scrollingIndex == lowerBoundIndex);
+  canScrollDown = !(scrollingIndex == upperBoundIndex);
+}
+
+// [PRINTS CURRENT NAME] : prints current name on lcd from EEPROM
+void printCurrName() {
+  address = currNameStartingAddress;
+  
+  for (int i = 0 ; i < nameSize; i++) {
+    EEPROM.get(address, currName[i]);
+    lcd.print(currName[i]);
+    address += sizeof(char);
+  }
+}
+
+// [DISPLAY NUMBER] : universal display number function
+void displayNumber(const int number, const int cursorRow, int cursorColumn) {
+  lcd.setCursor(cursorColumn, cursorRow);
+
+  if (number >= 100) {
+   lcd.print(digits[(int)number / 100]);
+  }
+  else
+  {
+    lcd.print(" ");
+  }
+	
+  if (number >= 10) {
+    lcd.print(digits[(number / 10) % 10]);
+  }
+  else
+  {
+    lcd.print(" ");
+  }
+	
+  cursorColumn += 2;
+  lcd.print(digits[number % 10]);
+  lcd.setCursor(cursorColumn + 1, cursorRow);
+}
+
+// [EEPROM] : initialises the EEPROM by setting default values to the current name, top 5 highscores, difficulty, sound, lcd and matrix brightness
+void initializeEEPROM() {
+  // current name 
+  resetName();
+
+  // highscores
+  resetHighscores();
+
+  // difficulty
+  diffIndex = 0;
+  EEPROM.put(currDiffAddress, diffIndex);
+
+  // sound
+  buzzerState = HIGH;
+  EEPROM.put(soundAddress, HIGH);
+
+  // led brightness
+  EEPROM.put(lcdBrightnessAddress, lcdBrightness);
+  setLcdBrightnessFromEEPROM();
+
+  // matrix brightness
+  EEPROM.put(matrixBrightnessAddress, matrixBrightness);
+  setMatrixBrightnessFromEEPROM();
+}
+
+// [EEPROM setup] : sets up values for current name, top 5 highscores, difficulty, sound, lcd and matrix brightness by accessing the EEPROM addresses where the values are stored at
+void setupFromEEPROM() {
+  setNameFromEEPROM();
+
+  setHighscoreTopFromEEPROM();
+    
+  setDifficultyFromEEPROM();
+  
+  setSoundFromEEPROM();
+
+  setLcdBrightnessFromEEPROM();
+
+  setMatrixBrightnessFromEEPROM();
+}
+
+// sets current name by accessing EEPROM address where value is stored
+void setNameFromEEPROM() {
+  address = currNameStartingAddress;
+
+  for (int i = 0 ; i < nameSize; i++) {
+    EEPROM.get(address, currName[i]);
+    address += sizeof(char);
+  }
+}
+
+// sets current top 5 highscores by accessing EEPROM address where values are stored
+void setHighscoreTopFromEEPROM() {
+  address = highscoreStartingAddress;
+    
+  for (int i = 0; i < highscores; i++) {
+    for (int j = 0; j < nameSize; j++) {
+      EEPROM.get(address, highscoreNames[i][j]);
+      address += sizeof(char);
+    }
+  }
+
+  for (int i=0; i < highscores; i++) {
+    EEPROM.get(address, highscoreValues[i]);
+    address += sizeof(int);
+  }
+}
+
+// sets current difficulty by accessing EEPROM address where value is stored
+void setDifficultyFromEEPROM() {
+  EEPROM.get(currDiffAddress, diffIndex);
+}
+
+// sets current sound option by accessing EEPROM address where value is stored
+void setSoundFromEEPROM() {
+  EEPROM.get(soundAddress, buzzerState);
+}
+
+// sets current lcd brightness by accessing EEPROM address where value is stored
+void setLcdBrightnessFromEEPROM() {
+  EEPROM.get(lcdBrightnessAddress, lcdBrightness);
+  analogWrite(lcdBacklightPin, lcdBrightness * LCD_BRIGHTNESS_FACTOR);
+}
+
+// sets current matrix brightness by accessing EEPROM address where value is stored
+void setMatrixBrightnessFromEEPROM() {
+  EEPROM.get(matrixBrightnessAddress, matrixBrightness);
+  lc.setIntensity(0, matrixBrightness); 
 }
