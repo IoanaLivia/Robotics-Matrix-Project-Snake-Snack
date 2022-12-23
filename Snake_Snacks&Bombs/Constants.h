@@ -7,23 +7,23 @@
 #define NONE -1
 
 // states
-#define WELCOME 0
-#define MENU 1
-#define SETTINGS 2
-#define START_GAME 3
-#define HIGHSCORE 4
-#define ABOUT 5
-#define HOW_TO 6
+#define WELCOME -2
+#define MENU -1
+#define START_GAME 1
+#define HIGHSCORE 2
+#define SETTINGS 3
+#define ABOUT 4
+#define HOW_TO 5
+#define RESET_HIGHSCORES 13
 #define END_GAME 7
 #define ENTER_NAME 8
-#define SET_BRIGHTNESS 9
-#define SET_SOUND 10
-#define SET_DIFFICULTY 11
-#define SET_MATRIX_BRIGHTNESS 12
-#define SET_LCD_BRIGHTNESS 13
-#define RESET_HIGHSCORES 14
-#define ENTER_NAME_FOR_HIGHSCORE 15
-#define RESET_NAME 16
+#define RESET_NAME 9
+#define SET_BRIGHTNESS 10
+#define SET_SOUND 11
+#define SET_DIFFICULTY 12
+#define SET_MATRIX_BRIGHTNESS 14
+#define SET_LCD_BRIGHTNESS 15
+#define ENTER_NAME_FOR_HIGHSCORE 16
 #define DISPLAY_FIRST_HIGHSCORE_MESSAGE 17
 #define DISPLAY_SECOND_HIGHSCORE_MESSAGE 18
 
@@ -60,7 +60,11 @@
 
 // multipling factors to reduce options for brightness
 #define LCD_BRIGHTNESS_FACTOR 20
-#define MATRIX_BRIGHTNESS_FACTOR
+// #define MATRIX_BRIGHTNESS_FACTOR 20
+
+#define BEEP_LOW 200
+#define BEEP_HIGH 600
+#define BEEP_DURATION 300
 
 // pins
 const int pinSW = 2,
@@ -178,6 +182,9 @@ const char difficulty[][16] = {
 const int highscores = 5,
           nameSize = 3;
 
+const int initialXValue = 510,
+          initialYValue = 510;
+
 // initialize snake with corresponding values for size 3
 const int snakeStartRow[] = {2, 1, 0};
 const int snakeStartCol[] = {3, 3, 3};
@@ -195,14 +202,26 @@ const uint64_t endGameImage = 0x007e7e7e7e7e7e00;
 
 // number of possible variations of choice for certain setting
 const int brightnessOptions = 3,
-          aboutOptions = 6,
+          aboutOptions = 7,
           diffOptions = 4,
           settingsOptions = 7,
           howToOptions = 8,
-          soundOptions = 3,
+          soundOptions = 2, //3
           menuOptions = 6;
 
-const int welcomeTextSize = 8;
+const int welcomeTextSize = 6;
+
+const int maxColValueLcd = 16;
+
+// struct for level configuration 
+struct levelConfiguration {
+  const int scoreThreshold,
+            levelSpeed,
+            spanBombsInterval,
+            foodValue,
+            foodSpanInterval;
+  byte spanBombs;
+};
 
 
 #endif
